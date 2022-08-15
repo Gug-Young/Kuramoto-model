@@ -15,7 +15,7 @@ def Sol_Kuramoto_mf(N,K,m,tspan,p_theta = None, p_dtheta = None, p_omega = None,
         case _: 
             theta,omega,Kc = Normal(N,mean,sigma,seed)
             dtheta  =  np.zeros(N)
-    match p_theta,p_dtheta,p_omega:
+    match len(p_theta),len(p_dtheta),len(p_omega):
         case  None,None,None:
             pass
         case  _:
