@@ -100,7 +100,7 @@ def Hysteresis(
                 (0, t_end),
                 dt=dt,
                 p_theta=theta_s[-1],
-                p_dtheta=dtheta_s[-1] + np.random.uniform(),
+                p_dtheta=dtheta_s[-1],
                 p_omega=omega,
                 distribution=dist,
             )
