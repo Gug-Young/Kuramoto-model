@@ -68,16 +68,28 @@ def Time_R(Ks,t_dic,rs_dic,t_r_dic,rs_r_dic,dK,dt,t_end,N,m,mean_time=50,save=Fa
         plt.savefig(f'{Folder_name}/N = {N}, m = {m},Forward,Backward each time,t_end={t_end},{dist},{dK}.png',dpi=400)
     
     r_last = []
+    r_last_std = []
     r_r_last = []
+    r_r_last_std = []
     Mean_time = int(mean_time/dt)
     for t_temp, r_temp in zip([*t_dic.values()],[*rs_dic.values()]):
-        r_last.append(np.mean(r_temp[-Mean_time:]))
+        r_time_temp = r_temp[-Mean_time:]
+        r_time_std = np.std(r_time_temp)
+        r_last.append(np.mean(r_time_temp))
+        r_last_std.append(r_time_std)
         
     for t_temp, r_temp in zip([*t_r_dic.values()],[*rs_r_dic.values()]):
-        r_r_last.append(np.mean(r_temp[-Mean_time:]))
+        r_r_time_temp = r_temp[-Mean_time:]
+        r_r_time_std = np.std(r_r_time_temp)
+        r_r_last.append(np.mean(r_r_time_temp))
+        r_r_last_std.append(r_r_time_std)
+        
     plt.figure()
-    plt.plot(Ks,r_last,'d',markersize=6)
-    plt.plot(Ks[::-1],r_r_last,'d',markersize=6)
+    # plt.plot(Ks,r_last,'d',markersize=6)
+    plt.errorbar(Ks,r_last,yerr=r_last_std,fmt='d',markersize=6,capsize=3)
+    # plt.plot(Ks[::-1],r_r_last,'d',markersize=6)
+    plt.errorbar(Ks[::-1],r_r_last,yerr=r_r_last_std,fmt='d',markersize=6,capsize=3)
+    
     plt.grid()
     plt.ylim(*r_draw)
     plt.xlim(*K_draw)
@@ -89,4 +101,3 @@ def Time_R(Ks,t_dic,rs_dic,t_r_dic,rs_r_dic,dK,dt,t_end,N,m,mean_time=50,save=Fa
     if save:
         plt.savefig(f"{Folder_name}/N = {N}, m = {m}, k vs r {dist},{dK},{t_end}.png",transparent=True,dpi = 500)
 
-        
