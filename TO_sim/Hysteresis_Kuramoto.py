@@ -213,5 +213,8 @@ def Hysteresis_pd(
         Ksrdf["ts"][K] = t + num_r * t_end
 
         num_r += 1
-
+    if m==0:
+        diff_osc = lambda x,dt: np.diff(x/dt,axis=0)
+        Ksdf["dtheta_s"] = Ksdf["theta_s"].apply(diff_osc,dt=dt)
+        Ksrdf["dtheta_s"] = Ksrdf["theta_s"].apply(diff_osc,dt=dt)
     return Ksdf,Ksrdf
