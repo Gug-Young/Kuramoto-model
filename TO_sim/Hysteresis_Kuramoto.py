@@ -140,7 +140,7 @@ def Hysteresis_pd(
     elif dist == "Quantile Lorentzian":
         theta_init, omega_init, Kc = Quantile_Lorentzian(N, 0, 1, seed=0)
     elif dist == "Quantile Normal":
-        theta_init, omega_init, Kc = Quantile_Normal(0, 1, N)
+        theta_init, omega_init, Kc = Quantile_Normal(N, mean=0, sigma=1,seed=None)
     Ksdf = pd.DataFrame({"Omega":Ks,"theta_s":Ks,"dtheta_s":Ks,"rs":Ks,"ts":Ks},index=Ks,dtype=object)
     num = 0
     for K in tqdm(Ks):

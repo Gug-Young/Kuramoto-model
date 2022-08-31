@@ -5,6 +5,7 @@ import numpy as np
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 
+
 def Animation_logabs(Ksdf, Ksrdf, N, m,MaxFrame=10000):
     fig = plt.figure(facecolor="white")
     ax11 = plt.subplot(221)
@@ -29,6 +30,8 @@ def Animation_logabs(Ksdf, Ksrdf, N, m,MaxFrame=10000):
     ax12.clear()
     ax11.set_xlabel(f"Oscillator No.(N={N})", fontsize=12)
     ax12.set_xlabel(f"Oscillator No.(N={N})", fontsize=12)
+    ax11.set_title(f"Forward", fontsize=12)
+    ax12.set_title(f"Backward", fontsize=12)
     ax12.tick_params(labelleft = False )
     ax11.set_ylabel("phase velocity\n" + r"($\log{|\dot{\theta}|}$)", fontsize=12)
     im11 = ax11.imshow(
@@ -69,6 +72,8 @@ def Animation_logabs(Ksdf, Ksrdf, N, m,MaxFrame=10000):
     def Update(K):
         ax11.clear()
         ax12.clear()
+        ax11.set_title(f"Forward", fontsize=12)
+        ax12.set_title(f"Backward", fontsize=12)
         ax11.set_xlabel(f"Oscillator No.(N={N})", fontsize=12)
         ax12.set_xlabel(f"Oscillator No.(N={N})", fontsize=12)
         ax11.set_ylabel("phase velocity\n" + r"($\log{|\dot{\theta}|}$)", fontsize=12)
@@ -95,7 +100,7 @@ def Animation_logabs(Ksdf, Ksrdf, N, m,MaxFrame=10000):
         )
         ax22.set_ylim(0, 1)
         ax22.grid()
-        fig.suptitle(f"m = {m}, K = {K}", fontsize=15, position=(0.5, 0.85))
+        fig.suptitle(f"m = {m}, K = {K}", fontsize=15)
         # fig.colorbar(im11, cax=cax11, orientation='vertical')
         # fig.colorbar(im12, cax=cax12, orientation='vertical')
         # ax2.text(0,-5,f"K = {K}",fontsize=15)
@@ -103,3 +108,4 @@ def Animation_logabs(Ksdf, Ksrdf, N, m,MaxFrame=10000):
 
     ani = FuncAnimation(fig, Update, frames=Ks, interval=500)
     return ani
+
