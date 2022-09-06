@@ -12,7 +12,6 @@ def Kuramoto_2nd_mf(Theta,t,omega,N,m,K):
         # print(f"Case m = {m}") 
         theta,dtheta = Theta[:N],Theta[N:]
         r,psi = get_order_parameter(theta,N)
-        ai,aj = np.meshgrid(theta,theta,sparse=True)
         ddtheta = (1/m)*(-dtheta + omega + K*r*np.sin(psi - theta))
         return np.array([*dtheta,*ddtheta])
     else:
