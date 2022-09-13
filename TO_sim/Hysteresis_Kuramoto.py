@@ -113,9 +113,9 @@ def Hysteresis(
 
 
 def Hysteresis_pd(
-    m, N=500, K_span=(0.1, 12.5), dK=0.2, dt=0.1, t_end=1000, dist="Quantile Lorentzian"
+    m, N=500, K_span=(0.1, 12.5), dK=0.2, dt=0.1, t_end=1000, dist="Quantile Lorentzian",seed=None
 ):
-    """_summary_
+    r"""_summary_
 
     Args:
         m (float): mass of oscillator.
@@ -125,7 +125,7 @@ def Hysteresis_pd(
         dt (float, optional): Time step. Defaults to 0.1.
         t_end (int, optional): End of simulation time. Defaults to 1000.
         dist (str, optional): Type of distribution for omega(Lorentzian, Normal, Quantile or Random sampled ). Defaults to "Quantile Lorentzian".
-
+        seed (float,optional): To make random distribution of $\theta$ and $\omega$, 'uniform' make uniform distribution of $\theta$
     Returns:
         Ksdf : (Forward)Simulationed data(pandas data frame), order parameter r, times, theta, dtheta and omega
         Ksrdf : (Backward)simulationed data(pandas data frame), order parameter r, times, theta, dtheta and omega
@@ -134,13 +134,13 @@ def Hysteresis_pd(
     Ks = np.round(np.arange(K_start, K_end + dK, dK),2)
     dtheta_init = np.zeros(N)
     if dist == "Normal":
-        theta_init, omega_init, Kc = Normal(N, 0, 1, seed=0)
+        theta_init, omega_init, Kc = Normal(N, 0, 1, seed=seed)
     elif dist == "Lorentzian":
-        theta_init, omega_init, Kc = Lorentzian(N, 0, 1, seed=0)
+        theta_init, omega_init, Kc = Lorentzian(N, 0, 1, seed=seed)
     elif dist == "Quantile Lorentzian":
-        theta_init, omega_init, Kc = Quantile_Lorentzian(N, 0, 1, seed=0)
+        theta_init, omega_init, Kc = Quantile_Lorentzian(N, 0, 1, seed=seed)
     elif dist == "Quantile Normal":
-        theta_init, omega_init, Kc = Quantile_Normal(N, mean=0, sigma=1,seed=None)
+        theta_init, omega_init, Kc = Quantile_Normal(N, mean=0, sigma=1,seed=seed)
     Ksdf = pd.DataFrame({"Omega":Ks,"theta_s":Ks,"dtheta_s":Ks,"rs":Ks,"ts":Ks},index=Ks,dtype=object)
     num = 0
     for K in tqdm(Ks):
