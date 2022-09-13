@@ -206,6 +206,22 @@ def Time_R_df(Ksdf,Ksrdf,N,m,mean_time=50,save=False,dist="Quantile Lorentzian",
         plt.savefig(f"{Folder_name}/N = {N}, m = {m}, k vs r {dist},{dK},{t_end},dt={dt}.png",transparent=True,dpi = 500)
 
 def Time_R_df_total(Ksdf,Ksrdf,N,m,mean_time=50,save=False,dist="Quantile Lorentzian",Folder_name="Review",K_draw=(1,13),r_draw=(0,0.9)):
+    """_summary_
+    To see total time vs order parameter, each time vs order parameter, coupling constant vs mean order parameter.
+    At right graph, you can see the error bar, this mean standard deviation of order parameter.
+    
+    Args:
+        Ksdf (Pandas DataFrame): After you done Hysteresis you can get Ksdf, Ksrdf
+        Ksrdf (Pandas DataFrame): After you done Hysteresis you can get Ksdf, Ksrdf
+        N (int): Number of oscillator that you put in Hysteresis argws.
+        m (float): mass of oscillator that you put in Hysteresis argws.
+        mean_time (int, optional): At right graph(`Coupling constant` vs `Order parameter`) you can control mean time. Defaults to 50.
+        save (bool, optional): If you want to save file switch this to True. Defaults to False.
+        dist (str, optional): You can change distribution of oscillator's natural frequency. So it will be change the theorical Kc(critical coupling constant). Defaults to "Quantile Lorentzian". optional `"Lorentzian"`,`"Quantile Lorentzian"`, `"Nomal",`"Quantile Normal"`
+        Folder_name (str, optional): Folder name where you want to save. Defaults to "Review".
+        K_draw (tuple, optional): K xlim. Defaults to (1,13).
+        r_draw (tuple, optional): r ylim. Defaults to (0,0.9).
+    """
     Ks = Ksdf.index
     Ksr = Ksrdf.index
     int_ =np.linspace(0.0,1,len(Ks))
@@ -281,9 +297,9 @@ def Time_R_df_total(Ksdf,Ksrdf,N,m,mean_time=50,save=False,dist="Quantile Lorent
         r_r_last.append(np.mean(r_r_time_temp))
         r_r_last_std.append(r_r_time_std)
         
-    ax31.errorbar(Ks,r_last,yerr=r_last_std,fmt='d',markersize=6,capsize=3)
-    ax31.errorbar(Ks[::-1],r_r_last,yerr=r_r_last_std,fmt='d',markersize=6,capsize=3)
-
+    ax31.errorbar(Ks,r_last,yerr=r_last_std,label="Forward",fmt='d',markersize=6,capsize=3)
+    ax31.errorbar(Ks[::-1],r_r_last,yerr=r_r_last_std,label="Backward",fmt='d',markersize=6,capsize=3)
+    ax31.legend()
     for ax_ in (ax11,ax12,ax21,ax22):
         ax_.set_ylim(-0.05,1.05)
 

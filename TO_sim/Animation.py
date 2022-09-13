@@ -5,17 +5,18 @@ import numpy as np
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 
-
-def Animation_logabs(Ksdf, Ksrdf, N, m,MaxFrame=10000):
+def Animation_logabs(Ksdf, Ksrdf, N, m, MaxFrame=10000):
     fig = plt.figure(facecolor="white")
     ax11 = plt.subplot(221)
     ax12 = plt.subplot(222)
     ax22 = plt.subplot(212)
     logabs = lambda x: np.log(np.abs(x))
+
     def Slicing(x):
-        slice_ = (Ksdf["dtheta_s"].iloc[0].shape[0] //MaxFrame)
-        slice_ = 1 if slice_<=1 else slice_
-        return x[::slice_,:]
+        slice_ = Ksdf["dtheta_s"].iloc[0].shape[0] // MaxFrame
+        slice_ = 1 if slice_ <= 1 else slice_
+        return x[::slice_, :]
+
     Temp_Ks = Ksdf["dtheta_s"].apply(logabs).apply(Slicing)
     Temp_Ksr = Ksrdf["dtheta_s"].apply(logabs).apply(Slicing)
     Ks = Ksdf.index
@@ -32,7 +33,7 @@ def Animation_logabs(Ksdf, Ksrdf, N, m,MaxFrame=10000):
     ax12.set_xlabel(f"Oscillator No.(N={N})", fontsize=12)
     ax11.set_title(f"Forward", fontsize=12)
     ax12.set_title(f"Backward", fontsize=12)
-    ax12.tick_params(labelleft = False )
+    ax12.tick_params(labelleft=False)
     ax11.set_ylabel("phase velocity\n" + r"($\log{|\dot{\theta}|}$)", fontsize=12)
     im11 = ax11.imshow(
         Temp_Ks[K], extent=[0, N, t_end, 0], aspect="auto", vmin=-8, vmax=3.4
@@ -110,12 +111,12 @@ def Animation_logabs(Ksdf, Ksrdf, N, m,MaxFrame=10000):
     return ani
 
 
-def Make_to_animate(df,K_set,time_interval=10):
+def Make_to_animate(df, K_set, time_interval=10):
     """_summary_
-    To make set when you make animation. df is to animate set, 
+    To make set when you make animation. df is to animate set,
     ex. K_set if you simulate one K, [[4.3, start time, end time]]
     ex. if you use more then 2 K set, [[4.3, 10, endtime],[4.5, 0, 50]]
-    
+
 
     Args:
         df (Pandas Data frame): After you done `Hysteresis`, you can get Ksdf, Ksrdf. So put it to simulate
@@ -127,19 +128,25 @@ def Make_to_animate(df,K_set,time_interval=10):
     """
     To_animate = []
     K_set = np.array(K_set)
-    Check_K = K_set[:,0]
-    t_= df["ts"].iloc[0]
-    def unzip_K_set(K_set):
-        K_,t_start_time,t_end_time = K_set
-        t_s = np.searchsorted(t_,t_start_time)
-        t_e = np.searchsorted(t_,t_end_time)
-        return K_,t_s,t_e
-    for K_set_ in K_set:
-        K_,t_s,t_e = unzip_K_set(K_set_)
-        [To_animate.append((K_,t)) for t in np.arange(t_s,t_e+0.5,time_interval,dtype = int)];
-    return Check_K,To_animate
+    Check_K = K_set[:, 0]
+    t_ = df["ts"].iloc[0]
 
-def Animate_phase(df,To_animate,Check_K,m):
+    def unzip_K_set(K_set):
+        K_, t_start_time, t_end_time = K_set
+        t_s = np.searchsorted(t_, t_start_time)
+        t_e = np.searchsorted(t_, t_end_time)
+        return K_, t_s, t_e
+
+    for K_set_ in K_set:
+        K_, t_s, t_e = unzip_K_set(K_set_)
+        [
+            To_animate.append((K_, t))
+            for t in np.arange(t_s, t_e + 0.5, time_interval, dtype=int)
+        ]
+    return Check_K, To_animate
+
+
+def Animate_phase(df, To_animate, Check_K, m):
     """_summary_
     To see phase vs phase velocity, phase velocity vs natural frequency, phase vs natural frequency.
     Use this animation you can check this system is really synchoronize
@@ -151,82 +158,85 @@ def Animate_phase(df,To_animate,Check_K,m):
     Returns:
         ani: After waiting this result, you can see this animation with `HTML(ani.to_jshtml())` or `ani.save("some name.mp4")`
     """
-    C_T =lambda theta :(theta+np.pi)%(2*np.pi) - np.pi
-    K_,time_idx = To_animate[0]
+    C_T = lambda theta: (theta + np.pi) % (2 * np.pi) - np.pi
+    K_, time_idx = To_animate[0]
     N = df["theta_s"].iloc[0].shape[1]
-    fig,(ax1,ax2,ax3) = plt.subplots(1,3,figsize = (18,5))
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(18, 5))
 
     Target = df.loc[Check_K]
     T_ = Target["theta_s"].apply(C_T)
     O = Target["Omega"][K_]
     dTt_ = Target["dtheta_s"]
-    Time = df['ts'].iloc[0]
-    T,dTt,time = T_[K_][time_idx],dTt_[K_][time_idx],Time[time_idx]
-    ax1.scatter(T,dTt,s=2,c=O,vmin=-5,vmax=5)
-    ax1.set_ylim(-4,4)
-    ax1.set_xlim(-np.pi,np.pi)
-    ax1.set_xlabel(r"phase ($\theta$)",fontsize=15)
-    ax1.set_ylabel(r"phase verocity($\dot{\theta}$)",fontsize=15)
+    Time = df["ts"].iloc[0]
+    T, dTt, time = T_[K_][time_idx], dTt_[K_][time_idx], Time[time_idx]
+    ax1.scatter(T, dTt, s=2, c=O, vmin=-5, vmax=5)
+    ax1.set_ylim(-4, 4)
+    ax1.set_xlim(-np.pi, np.pi)
+    ax1.set_xlabel(r"phase ($\theta$)", fontsize=15)
+    ax1.set_ylabel(r"phase verocity($\dot{\theta}$)", fontsize=15)
 
-    ax2.scatter(T,O,c=O,s=2,vmin=-5,vmax=5)
-    ax2.set_xlim(-np.pi,np.pi)
-    ax2.set_ylim(-4,4)
-    ax2.set_xlabel(r"phase ($\theta$)",fontsize=15)
-    ax2.set_ylabel(r"Natural frequency($\omega$)",fontsize=15)
+    ax2.scatter(T, O, c=O, s=2, vmin=-5, vmax=5)
+    ax2.set_xlim(-np.pi, np.pi)
+    ax2.set_ylim(-4, 4)
+    ax2.set_xlabel(r"phase ($\theta$)", fontsize=15)
+    ax2.set_ylabel(r"Natural frequency($\omega$)", fontsize=15)
 
-    sca = ax3.scatter(dTt,O,c=O,s=2,vmin=-5,vmax=5)
-    ax3.set_ylim(-4,4)
-    ax3.set_xlim(-4,4)
-    ax3.set_xlabel(r"phase verocity($\dot{\theta}$)",fontsize=15)
-    ax3.set_ylabel(r"Natural frequency($\omega$)",fontsize=15)
+    sca = ax3.scatter(dTt, O, c=O, s=2, vmin=-5, vmax=5)
+    ax3.set_ylim(-4, 4)
+    ax3.set_xlim(-4, 4)
+    ax3.set_xlabel(r"phase verocity($\dot{\theta}$)", fontsize=15)
+    ax3.set_ylabel(r"Natural frequency($\omega$)", fontsize=15)
 
     divider = make_axes_locatable(ax3)
-    cax = divider.append_axes('right', size='5%', pad=0.05)
-    cbar =fig.colorbar(sca, cax=cax, orientation='vertical',extend="both")
-    cbar.set_label("Natural frequency($\omega$)",fontsize=15)
-    fig.suptitle(f"N={N},m={m},K={K_},time={time}",fontsize=21)
-    ax1.set_title(f"phase vs phase vel.",fontsize=18)
-    ax2.set_title(f"phase vs Natural freq.",fontsize=18)
-    ax3.set_title(f"phase vel. vs Natural freq.",fontsize=18)
+    cax = divider.append_axes("right", size="5%", pad=0.05)
+    cbar = fig.colorbar(sca, cax=cax, orientation="vertical", extend="both")
+    cbar.set_label("Natural frequency($\omega$)", fontsize=15)
+    fig.suptitle(f"N={N},m={m},K={K_},time={time}", fontsize=21)
+    ax1.set_title(f"phase vs phase vel.", fontsize=18)
+    ax2.set_title(f"phase vs Natural freq.", fontsize=18)
+    ax3.set_title(f"phase vel. vs Natural freq.", fontsize=18)
     fig.tight_layout()
+
     def Animation_phase(K_time):
-        K_,time_idx = K_time
+        K_, time_idx = K_time
         T = T_[K_][time_idx]
         dTt = dTt_[K_][time_idx]
         time = Time[time_idx]
         ax1.clear()
-        ax1.scatter(T,dTt,s=2,c=O,vmin=-5,vmax=5)
-        ax1.set_ylim(-4,4)
-        ax1.set_xlim(-np.pi,np.pi)
-        ax1.set_xlabel(r"phase ($\theta$)",fontsize=15)
-        ax1.set_ylabel(r"phase verocity($\dot{\theta}$)",fontsize=15)
+        ax1.scatter(T, dTt, s=2, c=O, vmin=-5, vmax=5)
+        ax1.set_ylim(-4, 4)
+        ax1.set_xlim(-np.pi, np.pi)
+        ax1.set_xlabel(r"phase ($\theta$)", fontsize=15)
+        ax1.set_ylabel(r"phase verocity($\dot{\theta}$)", fontsize=15)
 
         ax2.clear()
-        ax2.scatter(T,O,c=O,s=2,vmin=-5,vmax=5)
-        ax2.set_xlim(-np.pi,np.pi)
-        ax2.set_ylim(-4,4)
-        ax2.set_xlabel(r"phase ($\theta$)",fontsize=15)
-        ax2.set_ylabel(r"Natural frequency($\omega$)",fontsize=15)
+        ax2.scatter(T, O, c=O, s=2, vmin=-5, vmax=5)
+        ax2.set_xlim(-np.pi, np.pi)
+        ax2.set_ylim(-4, 4)
+        ax2.set_xlabel(r"phase ($\theta$)", fontsize=15)
+        ax2.set_ylabel(r"Natural frequency($\omega$)", fontsize=15)
 
         ax3.clear()
-        sca = ax3.scatter(dTt,O,c=O,s=2,vmin=-5,vmax=5)
-        ax3.set_ylim(-4,4)
-        ax3.set_xlim(-4,4)
-        ax3.set_xlabel(r"phase verocity($\dot{\theta}$)",fontsize=15)
-        ax3.set_ylabel(r"Natural frequency($\omega$)",fontsize=15)
+        sca = ax3.scatter(dTt, O, c=O, s=2, vmin=-5, vmax=5)
+        ax3.set_ylim(-4, 4)
+        ax3.set_xlim(-4, 4)
+        ax3.set_xlabel(r"phase verocity($\dot{\theta}$)", fontsize=15)
+        ax3.set_ylabel(r"Natural frequency($\omega$)", fontsize=15)
         # fig.colorbar(sca, ax = ax3)
 
         # divider = make_axes_locatable(ax3)
         # cax = divider.append_axes('right', size='5%', pad=0.05)
         # cbar =fig.colorbar(sca, cax=cax, orientation='vertical',extend="both")
         # cbar.set_label("Natural frequency($\omega$)",fontsize=15)
-        fig.suptitle(f"N={N},m={m},K={K_},time={time:.02f}",fontsize=21)
-        ax1.set_title(f"phase vs phase vel.",fontsize=18)
-        ax2.set_title(f"phase vs Natural freq.",fontsize=18)
-        ax3.set_title(f"phase vel. vs Natural freq.",fontsize=18)
+        fig.suptitle(f"N={N},m={m},K={K_},time={time:.02f}", fontsize=21)
+        ax1.set_title(f"phase vs phase vel.", fontsize=18)
+        ax2.set_title(f"phase vs Natural freq.", fontsize=18)
+        ax3.set_title(f"phase vel. vs Natural freq.", fontsize=18)
         fig.tight_layout()
+
     ani = FuncAnimation(fig, Animation_phase, frames=To_animate, interval=50)
     return ani
+
 
 def ddtheta_animation(df,To_animate,Check_K,m):
     int_ =np.linspace(0,1,100)
@@ -257,7 +267,25 @@ def ddtheta_animation(df,To_animate,Check_K,m):
     ax.set_ylabel("phase acc.",fontsize=13)
     t_s_time = ts_[t_s]
     ax.set_title(r'$\ddot{\theta}(K,t)$'+f'm={m},K={K_},t={t_s_time:.02f}',fontsize=15)
-    sca = ax.scatter(np.arange(1,N+1),(df_[K_][t_s]),c=omega,vmin=-4,vmax=4,s=3)
+    sca = ax.scatter(np.arange(N),(df_[K_][t_s]),c=omega,vmin=-4,vmax=4,s=3)
+    KR = lambda df,K : df['rs'][K]*K
+    KMR = lambda x,m : (4/np.pi)*np.sqrt(x/m)
+    O_lset = lambda x:np.searchsorted(omega,-x)
+    O_rset = lambda x:np.searchsorted(omega,x)
+    KR_ = KR(df,Check_K)
+    KMR_ = KR_.apply(KMR,m=m)
+    KR_lidx = KR_.apply(O_lset)
+    KR_ridx = KR_.apply(O_rset)
+    KMR_lidx = KMR_.apply(O_lset)
+    KMR_ridx = KMR_.apply(O_rset)
+
+    kr_l, =plt.plot([KR_lidx[K_][t_s],KR_lidx[K_][t_s]],[min_,max_],ls='--',color='tab:orange')
+    kr_r, =plt.plot([KR_ridx[K_][t_s],KR_ridx[K_][t_s]],[min_,max_],ls='--',color='tab:orange')
+
+    kmr_l, =plt.plot([KMR_lidx[K_][t_s],KMR_lidx[K_][t_s]],[min_,max_],ls='--',color='tab:blue')
+    kmr_r, =plt.plot([KMR_ridx[K_][t_s],KMR_ridx[K_][t_s]],[min_,max_],ls='--',color='tab:blue')
+    
+
     divider = make_axes_locatable(ax)
     rax = divider.append_axes('right', size='5%', pad=0.1)
     cax = divider.append_axes('right', size='5%', pad=0.35)
@@ -276,6 +304,10 @@ def ddtheta_animation(df,To_animate,Check_K,m):
         sca.set_offsets(np.c_[np.arange(1,N+1),(df_[K_][t_s])])
         rbar.set_height(rs_[K_][t_s])
         rbar.set_color(color_[K_][t_s])
+        kr_l.set_xdata([KR_lidx[K_][t_s],KR_lidx[K_][t_s]])
+        kr_r.set_xdata([KR_ridx[K_][t_s],KR_ridx[K_][t_s]])
+        kmr_l.set_xdata([KMR_lidx[K_][t_s],KMR_lidx[K_][t_s]])
+        kmr_r.set_xdata([KMR_ridx[K_][t_s],KMR_ridx[K_][t_s]])
         ax.set_title(r'$\ddot{\theta}(K,t)$'+f'm={m},K={K_},t={t_s_time:.02f}',fontsize=15)
     ani = FuncAnimation(fig, Update, frames=To_animate, interval=50)
     return ani
@@ -311,6 +343,24 @@ def dtheta_animation(df,To_animate,Check_K,m):
     ax.set_title(r'$\dot{\theta}(K,t)$'+f'm={m},K={K_},t={t_s_time:.02f}',fontsize=15)
     sca = ax.scatter(np.arange(1,N+1),(df_[K_][t_s]),c=omega,vmin=-4,vmax=4,s=3)
     divider = make_axes_locatable(ax)
+    KR = lambda df,K : df['rs'][K]*K
+    KMR = lambda x,m : (4/np.pi)*np.sqrt(x/m)
+    O_lset = lambda x:np.searchsorted(omega,-x)
+    O_rset = lambda x:np.searchsorted(omega,x)
+    KR_ = KR(df,Check_K)
+    KMR_ = KR_.apply(KMR,m=m)
+    KR_lidx = KR_.apply(O_lset)
+    KR_ridx = KR_.apply(O_rset)
+    KMR_lidx = KMR_.apply(O_lset)
+    KMR_ridx = KMR_.apply(O_rset)
+
+    kr_l, =plt.plot([KR_lidx[K_][t_s],KR_lidx[K_][t_s]],[min_,max_],ls='--',color='tab:orange')
+    kr_r, =plt.plot([KR_ridx[K_][t_s],KR_ridx[K_][t_s]],[min_,max_],ls='--',color='tab:orange')
+
+    kmr_l, =plt.plot([KMR_lidx[K_][t_s],KMR_lidx[K_][t_s]],[min_,max_],ls='--',color='tab:blue')
+    kmr_r, =plt.plot([KMR_ridx[K_][t_s],KMR_ridx[K_][t_s]],[min_,max_],ls='--',color='tab:blue')
+
+    
     rax = divider.append_axes('right', size='5%', pad=0.1)
     cax = divider.append_axes('right', size='5%', pad=0.35)
     cbar =fig.colorbar(sca, cax=cax,ax=cax, orientation='vertical',extend="both")
@@ -327,6 +377,10 @@ def dtheta_animation(df,To_animate,Check_K,m):
         sca.set_offsets(np.c_[np.arange(1,N+1),(df_[K_][t_s])])
         rbar.set_height(rs_[K_][t_s])
         rbar.set_color(color_[K_][t_s])
+        kr_l.set_xdata([KR_lidx[K_][t_s],KR_lidx[K_][t_s]])
+        kr_r.set_xdata([KR_ridx[K_][t_s],KR_ridx[K_][t_s]])
+        kmr_l.set_xdata([KMR_lidx[K_][t_s],KMR_lidx[K_][t_s]])
+        kmr_r.set_xdata([KMR_ridx[K_][t_s],KMR_ridx[K_][t_s]])
         ax.set_title(r'$\dot{\theta}(K,t)$'+f'm={m},K={K_},t={t_s_time:.02f}',fontsize=15)
     ani = FuncAnimation(fig, Update, frames=To_animate, interval=50)
     return ani
@@ -352,12 +406,31 @@ def theta_animation(df,To_animate,Check_K,m):
     
     fig = plt.figure(facecolor='white')
     ax = fig.subplots()
+    
     ax.set_ylim(min_,max_)
     ax.set_xlabel("Oscillator No.",fontsize=13)
     ax.set_ylabel(r"$sin(\theta)$",fontsize=13)
     t_s_time = ts_[t_s]
     ax.set_title(r'$\theta(K,t)$'+f'm={m},K={K_},t={t_s_time:.02f}',fontsize=15)
     sca = ax.scatter(np.arange(1,N+1),(df_[K_][t_s]),c=omega,vmin=-4,vmax=4,s=3)
+    
+    KR = lambda df,K : df['rs'][K]*K
+    KMR = lambda x,m : (4/np.pi)*np.sqrt(x/m)
+    O_lset = lambda x:np.searchsorted(omega,-x)
+    O_rset = lambda x:np.searchsorted(omega,x)
+    KR_ = KR(df,Check_K)
+    KMR_ = KR_.apply(KMR,m=m)
+    KR_lidx = KR_.apply(O_lset)
+    KR_ridx = KR_.apply(O_rset)
+    KMR_lidx = KMR_.apply(O_lset)
+    KMR_ridx = KMR_.apply(O_rset)
+
+    kr_l, =plt.plot([KR_lidx[K_][t_s],KR_lidx[K_][t_s]],[min_,max_],ls='--',color='tab:orange')
+    kr_r, =plt.plot([KR_ridx[K_][t_s],KR_ridx[K_][t_s]],[min_,max_],ls='--',color='tab:orange')
+
+    kmr_l, =plt.plot([KMR_lidx[K_][t_s],KMR_lidx[K_][t_s]],[min_,max_],ls='--',color='tab:blue')
+    kmr_r, =plt.plot([KMR_ridx[K_][t_s],KMR_ridx[K_][t_s]],[min_,max_],ls='--',color='tab:blue')
+
     divider = make_axes_locatable(ax)
     rax = divider.append_axes('right', size='5%', pad=0.1)
     cax = divider.append_axes('right', size='5%', pad=0.35)
@@ -375,6 +448,11 @@ def theta_animation(df,To_animate,Check_K,m):
         sca.set_offsets(np.c_[np.arange(1,N+1),(df_[K_][t_s])])
         rbar.set_height(rs_[K_][t_s])
         rbar.set_color(color_[K_][t_s])
+        kr_l.set_xdata([KR_lidx[K_][t_s],KR_lidx[K_][t_s]])
+        kr_r.set_xdata([KR_ridx[K_][t_s],KR_ridx[K_][t_s]])
+        kmr_l.set_xdata([KMR_lidx[K_][t_s],KMR_lidx[K_][t_s]])
+        kmr_r.set_xdata([KMR_ridx[K_][t_s],KMR_ridx[K_][t_s]])
+
         ax.set_title(r'$\theta(K,t)$'+f'm={m},K={K_},t={t_s_time:.02f}',fontsize=15)
     ani = FuncAnimation(fig, Update, frames=To_animate, interval=50)
     return ani
