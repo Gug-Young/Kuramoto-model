@@ -238,221 +238,381 @@ def Animate_phase(df, To_animate, Check_K, m):
     return ani
 
 
-def ddtheta_animation(df,To_animate,Check_K,m):
-    int_ =np.linspace(0,1,100)
+def ddtheta_animation(df, To_animate, Check_K, m):
+    int_ = np.linspace(0, 1, 100)
     color = plt.cm.viridis(int_)
-    sorted_color = lambda x: color[np.searchsorted(int_,x)]
-    
-    K_,t_s = To_animate[0]
-    ts_=df["ts"].iloc[0]
-    rs_= df["rs"]
+    sorted_color = lambda x: color[np.searchsorted(int_, x)]
+
+    K_, t_s = To_animate[0]
+    ts_ = df["ts"].iloc[0]
+    rs_ = df["rs"]
     color_ = rs_.apply(sorted_color)
-    dt = ts_[1]-ts_[0]
+    dt = ts_[1] - ts_[0]
     df = df.loc[Check_K]
-    diff = lambda x : np.diff(x,axis=0)/dt
+    diff = lambda x: np.diff(x, axis=0) / dt
     df["ddtheta_s"] = df["dtheta_s"].apply(diff)
-    df_=df["ddtheta_s"]
+    df_ = df["ddtheta_s"]
     omega = df["Omega"][K_]
-    max_ = df_.apply(np.max).max()  
-    min_ = df_.apply(np.min).min()  
+    max_ = df_.apply(np.max).max()
+    min_ = df_.apply(np.min).min()
 
     print("max_,min_")
-    print(max_,min_)
+    print(max_, min_)
     N = df_.iloc[0].shape[1]
-    
-    fig = plt.figure(facecolor='white')
+
+    fig = plt.figure(facecolor="white")
     ax = fig.subplots()
-    ax.set_ylim(min_,max_)
-    ax.set_xlabel("Oscillator No.",fontsize=13)
-    ax.set_ylabel("phase acc.",fontsize=13)
+    ax.set_ylim(min_, max_)
+    ax.set_xlabel("Oscillator No.", fontsize=13)
+    ax.set_ylabel("phase acc.", fontsize=13)
     t_s_time = ts_[t_s]
-    ax.set_title(r'$\ddot{\theta}(K,t)$'+f'm={m},K={K_},t={t_s_time:.02f}',fontsize=15)
-    sca = ax.scatter(np.arange(N),(df_[K_][t_s]),c=omega,vmin=-4,vmax=4,s=3)
-    KR = lambda df,K : df['rs'][K]*K
-    KMR = lambda x,m : (4/np.pi)*np.sqrt(x/m)
-    O_lset = lambda x:np.searchsorted(omega,-x)
-    O_rset = lambda x:np.searchsorted(omega,x)
-    KR_ = KR(df,Check_K)
-    KMR_ = KR_.apply(KMR,m=m)
+    title = ax.set_title(
+        r"$\ddot{\theta}(K,t)$" + f" m={m},K={K_},t={t_s_time:.02f}",
+        fontsize=15,
+        pad=30,
+    )
+    sca = ax.scatter(np.arange(N), (df_[K_][t_s]), c=omega, vmin=-4, vmax=4, s=3)
+    KR = lambda df, K: df["rs"][K] * K
+    KMR = lambda x, m: (4 / np.pi) * np.sqrt(x / m)
+    KR_ = KR(df, Check_K)
+    KMR_ = KR_.apply(KMR, m=m)
+    O_lset = lambda x: np.searchsorted(omega, -x)
+    O_rset = lambda x: np.searchsorted(omega, x)
     KR_lidx = KR_.apply(O_lset)
     KR_ridx = KR_.apply(O_rset)
     KMR_lidx = KMR_.apply(O_lset)
     KMR_ridx = KMR_.apply(O_rset)
 
-    kr_l, =plt.plot([KR_lidx[K_][t_s],KR_lidx[K_][t_s]],[min_,max_],ls='--',color='tab:orange')
-    kr_r, =plt.plot([KR_ridx[K_][t_s],KR_ridx[K_][t_s]],[min_,max_],ls='--',color='tab:orange')
+    (kr_l,) = ax.plot(
+        [KR_lidx[K_][t_s], KR_lidx[K_][t_s]],
+        [min_, max_],
+        ls="--",
+        color="tab:orange",
+        label=r"$\Omega_{D}$(Depinning freq.)",
+    )
+    (kr_r,) = ax.plot(
+        [KR_ridx[K_][t_s], KR_ridx[K_][t_s]], [min_, max_], ls="--", color="tab:orange"
+    )
 
-    kmr_l, =plt.plot([KMR_lidx[K_][t_s],KMR_lidx[K_][t_s]],[min_,max_],ls='--',color='tab:blue')
-    kmr_r, =plt.plot([KMR_ridx[K_][t_s],KMR_ridx[K_][t_s]],[min_,max_],ls='--',color='tab:blue')
-    
+    (kmr_l,) = ax.plot(
+        [KMR_lidx[K_][t_s], KMR_lidx[K_][t_s]],
+        [min_, max_],
+        ls="--",
+        color="tab:blue",
+        label=r"$\Omega_{P}$(Pinning freq.)",
+    )
+    (kmr_r,) = ax.plot(
+        [KMR_ridx[K_][t_s], KMR_ridx[K_][t_s]], [min_, max_], ls="--", color="tab:blue"
+    )
 
     divider = make_axes_locatable(ax)
-    rax = divider.append_axes('right', size='5%', pad=0.1)
-    cax = divider.append_axes('right', size='5%', pad=0.35)
-    cbar =fig.colorbar(sca, cax=cax,ax=cax, orientation='vertical',extend="both")
-    cbar.set_label("Natural frequency($\omega$)",fontsize=12)
-    
-    rbar,=rax.bar(0,rs_[K_][t_s])
-    rax.set_ylim(0,1)
-    rax.set_title('r')
-    rax.tick_params(labelleft=False,left = False,labelright = True, right= True,labelbottom = False, bottom= False)
+    rax = divider.append_axes("right", size="5%", pad=0.05)
+    cax = divider.append_axes("right", size="5%", pad=0.35)
+    cbar = fig.colorbar(sca, cax=cax, ax=cax, orientation="vertical", extend="both")
+    cbar.set_label("Natural frequency($\omega$)", fontsize=12)
+    # ax.legend(bbox_to_anchor=(0.0, -.03), loc="lower left",bbox_transform=fig.transFigure, ncol=2)
+    ax.legend(
+        bbox_to_anchor=(0.0, 1.01, 1, 0.1),
+        loc="lower left",
+        mode="expand",
+        borderaxespad=0,
+        ncol=3,
+    )
+    (rbar,) = rax.bar(0, rs_[K_][t_s])
+    rax.set_ylim(0, 1)
+    rax.set_title("r")
+    rax.tick_params(
+        labelleft=False,
+        left=False,
+        labelright=True,
+        right=True,
+        labelbottom=False,
+        bottom=False,
+    )
     fig.tight_layout()
 
     def Update(To_animate):
-        K_,t_s = To_animate
+        K_, t_s = To_animate
         t_s_time = ts_[t_s]
-        sca.set_offsets(np.c_[np.arange(1,N+1),(df_[K_][t_s])])
+        sca.set_offsets(np.c_[np.arange(N), (df_[K_][t_s])])
         rbar.set_height(rs_[K_][t_s])
         rbar.set_color(color_[K_][t_s])
-        kr_l.set_xdata([KR_lidx[K_][t_s],KR_lidx[K_][t_s]])
-        kr_r.set_xdata([KR_ridx[K_][t_s],KR_ridx[K_][t_s]])
-        kmr_l.set_xdata([KMR_lidx[K_][t_s],KMR_lidx[K_][t_s]])
-        kmr_r.set_xdata([KMR_ridx[K_][t_s],KMR_ridx[K_][t_s]])
-        ax.set_title(r'$\ddot{\theta}(K,t)$'+f'm={m},K={K_},t={t_s_time:.02f}',fontsize=15)
+        kr_l.set_xdata([KR_lidx[K_][t_s], KR_lidx[K_][t_s]])
+        kr_r.set_xdata([KR_ridx[K_][t_s], KR_ridx[K_][t_s]])
+        kmr_l.set_xdata([KMR_lidx[K_][t_s], KMR_lidx[K_][t_s]])
+        kmr_r.set_xdata([KMR_ridx[K_][t_s], KMR_ridx[K_][t_s]])
+        title.set_text(r"$\ddot{\theta}(K,t)$" + f" m={m},K={K_},t={t_s_time:.02f}")
+
     ani = FuncAnimation(fig, Update, frames=To_animate, interval=50)
     return ani
 
-def dtheta_animation(df,To_animate,Check_K,m):
-    int_ =np.linspace(0,1,100)
-    color = plt.cm.viridis(int_)
-    sorted_color = lambda x: color[np.searchsorted(int_,x)]
-    
-    K_,t_s = To_animate[0]
-    ts_=df["ts"].iloc[0]
-    rs_= df["rs"]
-    color_ = rs_.apply(sorted_color)
-    
-    df = df.loc[Check_K]
-    df_=df["dtheta_s"]
-    omega = df["Omega"][K_]
-    max_ = df_.apply(np.max).max()/100
-    min_ = df_.apply(np.min).min()/100
 
+def dtheta_animation(df, To_animate, Check_K, m):
+    int_ = np.linspace(0, 1, 100)
+    color = plt.cm.viridis(int_)
+    sorted_color = lambda x: color[np.searchsorted(int_, x)]
+
+    K_, t_s = To_animate[0]
+    ts_ = df["ts"].iloc[0]
+    rs_ = df["rs"]
+    color_ = rs_.apply(sorted_color)
+
+    df = df.loc[Check_K]
+    df_ = df["dtheta_s"]
+    omega = df["Omega"][K_]
+    max_ = df_.apply(np.max).max() / 100
+    min_ = df_.apply(np.min).min() / 100
 
     N = df_.iloc[0].shape[1]
     print("max_/100,min_/100")
-    print(max_,min_)
-    
-    fig = plt.figure(facecolor='white')
+    print(max_, min_)
+
+    fig = plt.figure(facecolor="white")
     ax = fig.subplots()
-    ax.set_ylim(min_,max_)
-    ax.set_xlabel("Oscillator No.",fontsize=13)
-    ax.set_ylabel("phase vel.",fontsize=13)
+    ax.set_ylim(min_, max_)
+    ax.set_xlabel("Oscillator No.", fontsize=13)
+    ax.set_ylabel("phase vel.", fontsize=13)
     t_s_time = ts_[t_s]
     # sca = ax.scatter(np.arange(1,N+1),(df_[t_s]),c=omega,vmin=-4,vmax=4,s=3)
-    ax.set_title(r'$\dot{\theta}(K,t)$'+f'm={m},K={K_},t={t_s_time:.02f}',fontsize=15)
-    sca = ax.scatter(np.arange(1,N+1),(df_[K_][t_s]),c=omega,vmin=-4,vmax=4,s=3)
+    title = ax.set_title(
+        r"$\dot{\theta}(K,t)$" + f" m={m},K={K_},t={t_s_time:.02f}", fontsize=15, pad=30
+    )
+    sca = ax.scatter(np.arange(1, N + 1), (df_[K_][t_s]), c=omega, vmin=-4, vmax=4, s=3)
     divider = make_axes_locatable(ax)
-    KR = lambda df,K : df['rs'][K]*K
-    KMR = lambda x,m : (4/np.pi)*np.sqrt(x/m)
-    O_lset = lambda x:np.searchsorted(omega,-x)
-    O_rset = lambda x:np.searchsorted(omega,x)
-    KR_ = KR(df,Check_K)
-    KMR_ = KR_.apply(KMR,m=m)
+    KR = lambda df, K: df["rs"][K] * K
+    KMR = lambda x, m: (4 / np.pi) * np.sqrt(x / m)
+    KR_ = KR(df, Check_K)
+    KMR_ = KR_.apply(KMR, m=m)
+    O_lset = lambda x: np.searchsorted(omega, -x)
+    O_rset = lambda x: np.searchsorted(omega, x)
     KR_lidx = KR_.apply(O_lset)
     KR_ridx = KR_.apply(O_rset)
     KMR_lidx = KMR_.apply(O_lset)
     KMR_ridx = KMR_.apply(O_rset)
 
-    kr_l, =plt.plot([KR_lidx[K_][t_s],KR_lidx[K_][t_s]],[min_,max_],ls='--',color='tab:orange')
-    kr_r, =plt.plot([KR_ridx[K_][t_s],KR_ridx[K_][t_s]],[min_,max_],ls='--',color='tab:orange')
+    (kr_l,) = plt.plot(
+        [KR_lidx[K_][t_s], KR_lidx[K_][t_s]],
+        [min_, max_],
+        ls="--",
+        color="tab:orange",
+        label=r"$\Omega_{D}$(Depinning freq.)",
+    )
+    (kr_r,) = plt.plot(
+        [KR_ridx[K_][t_s], KR_ridx[K_][t_s]], [min_, max_], ls="--", color="tab:orange"
+    )
 
-    kmr_l, =plt.plot([KMR_lidx[K_][t_s],KMR_lidx[K_][t_s]],[min_,max_],ls='--',color='tab:blue')
-    kmr_r, =plt.plot([KMR_ridx[K_][t_s],KMR_ridx[K_][t_s]],[min_,max_],ls='--',color='tab:blue')
+    (kmr_l,) = plt.plot(
+        [KMR_lidx[K_][t_s], KMR_lidx[K_][t_s]],
+        [min_, max_],
+        ls="--",
+        color="tab:blue",
+        label=r"$\Omega_{P}$(Pinning freq.)",
+    )
+    (kmr_r,) = plt.plot(
+        [KMR_ridx[K_][t_s], KMR_ridx[K_][t_s]], [min_, max_], ls="--", color="tab:blue"
+    )
+    ax.legend(
+        bbox_to_anchor=(0.0, 1.01, 1, 0.1),
+        loc="lower left",
+        mode="expand",
+        borderaxespad=0,
+        ncol=3,
+    )
 
-    
-    rax = divider.append_axes('right', size='5%', pad=0.1)
-    cax = divider.append_axes('right', size='5%', pad=0.35)
-    cbar =fig.colorbar(sca, cax=cax,ax=cax, orientation='vertical',extend="both")
-    cbar.set_label("Natural frequency($\omega$)",fontsize=12)
-    
-    rbar,=rax.bar(0,rs_[K_][t_s],color=color_[K_][t_s])
-    rax.set_ylim(0,1)
-    rax.set_title('r')
-    rax.tick_params(labelleft=False,left = False,labelright = True, right= True,labelbottom = False, bottom= False)
+    rax = divider.append_axes("right", size="5%", pad=0.1)
+    cax = divider.append_axes("right", size="5%", pad=0.35)
+    cbar = fig.colorbar(sca, cax=cax, ax=cax, orientation="vertical", extend="both")
+    cbar.set_label("Natural frequency($\omega$)", fontsize=12)
+
+    (rbar,) = rax.bar(0, rs_[K_][t_s], color=color_[K_][t_s])
+    rax.set_ylim(0, 1)
+    rax.set_title("r")
+    rax.tick_params(
+        labelleft=False,
+        left=False,
+        labelright=True,
+        right=True,
+        labelbottom=False,
+        bottom=False,
+    )
     fig.tight_layout()
+
     def Update(To_animate):
-        K_,t_s = To_animate
+        K_, t_s = To_animate
         t_s_time = ts_[t_s]
-        sca.set_offsets(np.c_[np.arange(1,N+1),(df_[K_][t_s])])
+        sca.set_offsets(np.c_[np.arange(1, N + 1), (df_[K_][t_s])])
         rbar.set_height(rs_[K_][t_s])
         rbar.set_color(color_[K_][t_s])
-        kr_l.set_xdata([KR_lidx[K_][t_s],KR_lidx[K_][t_s]])
-        kr_r.set_xdata([KR_ridx[K_][t_s],KR_ridx[K_][t_s]])
-        kmr_l.set_xdata([KMR_lidx[K_][t_s],KMR_lidx[K_][t_s]])
-        kmr_r.set_xdata([KMR_ridx[K_][t_s],KMR_ridx[K_][t_s]])
-        ax.set_title(r'$\dot{\theta}(K,t)$'+f'm={m},K={K_},t={t_s_time:.02f}',fontsize=15)
+        kr_l.set_xdata([KR_lidx[K_][t_s], KR_lidx[K_][t_s]])
+        kr_r.set_xdata([KR_ridx[K_][t_s], KR_ridx[K_][t_s]])
+        kmr_l.set_xdata([KMR_lidx[K_][t_s], KMR_lidx[K_][t_s]])
+        kmr_r.set_xdata([KMR_ridx[K_][t_s], KMR_ridx[K_][t_s]])
+        title.set_text(r"$\dot{\theta}(K,t)$" + f" m={m},K={K_},t={t_s_time:.02f}")
+
     ani = FuncAnimation(fig, Update, frames=To_animate, interval=50)
     return ani
 
-def theta_animation(df,To_animate,Check_K,m):
-    int_ =np.linspace(0,1,100)
+
+def theta_animation(df, To_animate, Check_K, m):
+    int_ = np.linspace(0, 1, 100)
     color = plt.cm.viridis(int_)
-    sorted_color = lambda x: color[np.searchsorted(int_,x)]
+    sorted_color = lambda x: color[np.searchsorted(int_, x)]
     sin = lambda x: np.sin(x)
-    K_,t_s = To_animate[0]
-    
-    ts_=df["ts"].iloc[0]
-    rs_= df["rs"]
+    K_, t_s = To_animate[0]
+
+    ts_ = df["ts"].iloc[0]
+    rs_ = df["rs"]
     color_ = rs_.apply(sorted_color)
     df = df.loc[Check_K]
-    df_= df["theta_s"].apply(sin)
+    df_ = df["theta_s"].apply(sin)
     N = df_.iloc[0].shape[1]
     omega = df["Omega"][K_]
-    max_ = df_.apply(np.max).max()  
-    min_ = df_.apply(np.min).min()  
+    max_ = df_.apply(np.max).max()
+    min_ = df_.apply(np.min).min()
     print("max,min")
-    print(max_,min_)
-    
-    fig = plt.figure(facecolor='white')
+    print(max_, min_)
+
+    fig = plt.figure(facecolor="white")
     ax = fig.subplots()
-    
-    ax.set_ylim(min_,max_)
-    ax.set_xlabel("Oscillator No.",fontsize=13)
-    ax.set_ylabel(r"$sin(\theta)$",fontsize=13)
+
+    ax.set_ylim(min_, max_)
+    ax.set_xlabel("Oscillator No.", fontsize=13)
+    ax.set_ylabel(r"$sin(\theta)$", fontsize=13)
     t_s_time = ts_[t_s]
-    ax.set_title(r'$\theta(K,t)$'+f'm={m},K={K_},t={t_s_time:.02f}',fontsize=15)
-    sca = ax.scatter(np.arange(1,N+1),(df_[K_][t_s]),c=omega,vmin=-4,vmax=4,s=3)
-    
-    KR = lambda df,K : df['rs'][K]*K
-    KMR = lambda x,m : (4/np.pi)*np.sqrt(x/m)
-    O_lset = lambda x:np.searchsorted(omega,-x)
-    O_rset = lambda x:np.searchsorted(omega,x)
-    KR_ = KR(df,Check_K)
-    KMR_ = KR_.apply(KMR,m=m)
+    title = ax.set_title(
+        r"$\theta(K,t)$" + f" m={m},K={K_},t={t_s_time:.02f}", fontsize=15, pad=30
+    )
+    sca = ax.scatter(np.arange(1, N + 1), (df_[K_][t_s]), c=omega, vmin=-4, vmax=4, s=3)
+    O_lset = lambda x: np.searchsorted(omega, -x)
+    O_rset = lambda x: np.searchsorted(omega, x)
+    KR = lambda df, K: df["rs"][K] * K
+    KMR = lambda x, m: (4 / np.pi) * np.sqrt(x / m)
+    KR_ = KR(df, Check_K)
+    KMR_ = KR_.apply(KMR, m=m)
     KR_lidx = KR_.apply(O_lset)
     KR_ridx = KR_.apply(O_rset)
     KMR_lidx = KMR_.apply(O_lset)
     KMR_ridx = KMR_.apply(O_rset)
 
-    kr_l, =plt.plot([KR_lidx[K_][t_s],KR_lidx[K_][t_s]],[min_,max_],ls='--',color='tab:orange')
-    kr_r, =plt.plot([KR_ridx[K_][t_s],KR_ridx[K_][t_s]],[min_,max_],ls='--',color='tab:orange')
+    (kr_l,) = plt.plot(
+        [KR_lidx[K_][t_s], KR_lidx[K_][t_s]],
+        [min_, max_],
+        ls="--",
+        color="tab:orange",
+        label=r"$\Omega_{D}$(Depinning freq.)",
+    )
+    (kr_r,) = plt.plot(
+        [KR_ridx[K_][t_s], KR_ridx[K_][t_s]], [min_, max_], ls="--", color="tab:orange"
+    )
 
-    kmr_l, =plt.plot([KMR_lidx[K_][t_s],KMR_lidx[K_][t_s]],[min_,max_],ls='--',color='tab:blue')
-    kmr_r, =plt.plot([KMR_ridx[K_][t_s],KMR_ridx[K_][t_s]],[min_,max_],ls='--',color='tab:blue')
+    (kmr_l,) = plt.plot(
+        [KMR_lidx[K_][t_s], KMR_lidx[K_][t_s]],
+        [min_, max_],
+        ls="--",
+        color="tab:blue",
+        label=r"$\Omega_{P}$(Pinning freq.)",
+    )
+    (kmr_r,) = plt.plot(
+        [KMR_ridx[K_][t_s], KMR_ridx[K_][t_s]], [min_, max_], ls="--", color="tab:blue"
+    )
+    ax.legend(
+        bbox_to_anchor=(0.0, 1.01, 1, 0.1),
+        loc="lower left",
+        mode="expand",
+        borderaxespad=0,
+        ncol=3,
+    )
 
     divider = make_axes_locatable(ax)
-    rax = divider.append_axes('right', size='5%', pad=0.1)
-    cax = divider.append_axes('right', size='5%', pad=0.35)
-    cbar =fig.colorbar(sca, cax=cax,ax=cax, orientation='vertical',extend="both")
-    cbar.set_label("Natural frequency($\omega$)",fontsize=12)
-    
-    rbar,=rax.bar(0,rs_[K_][t_s],color=color_[K_][t_s])
-    rax.set_ylim(0,1)
-    rax.set_title('r')
-    rax.tick_params(labelleft=False,left = False,labelright = True, right= True,labelbottom = False, bottom= False)
+    rax = divider.append_axes("right", size="5%", pad=0.1)
+    cax = divider.append_axes("right", size="5%", pad=0.35)
+    cbar = fig.colorbar(sca, cax=cax, ax=cax, orientation="vertical", extend="both")
+    cbar.set_label("Natural frequency($\omega$)", fontsize=12)
+
+    (rbar,) = rax.bar(0, rs_[K_][t_s], color=color_[K_][t_s])
+    rax.set_ylim(0, 1)
+    rax.set_title("r")
+    rax.tick_params(
+        labelleft=False,
+        left=False,
+        labelright=True,
+        right=True,
+        labelbottom=False,
+        bottom=False,
+    )
     fig.tight_layout()
+
     def Update(To_animate):
-        K_,t_s = To_animate
+        K_, t_s = To_animate
         t_s_time = ts_[t_s]
-        sca.set_offsets(np.c_[np.arange(1,N+1),(df_[K_][t_s])])
+        sca.set_offsets(np.c_[np.arange(1, N + 1), (df_[K_][t_s])])
         rbar.set_height(rs_[K_][t_s])
         rbar.set_color(color_[K_][t_s])
-        kr_l.set_xdata([KR_lidx[K_][t_s],KR_lidx[K_][t_s]])
-        kr_r.set_xdata([KR_ridx[K_][t_s],KR_ridx[K_][t_s]])
-        kmr_l.set_xdata([KMR_lidx[K_][t_s],KMR_lidx[K_][t_s]])
-        kmr_r.set_xdata([KMR_ridx[K_][t_s],KMR_ridx[K_][t_s]])
+        kr_l.set_xdata([KR_lidx[K_][t_s], KR_lidx[K_][t_s]])
+        kr_r.set_xdata([KR_ridx[K_][t_s], KR_ridx[K_][t_s]])
+        kmr_l.set_xdata([KMR_lidx[K_][t_s], KMR_lidx[K_][t_s]])
+        kmr_r.set_xdata([KMR_ridx[K_][t_s], KMR_ridx[K_][t_s]])
+        title.set_text(r"$\theta(K,t)$" + f" m={m},K={K_},t={t_s_time:.02f}")
 
-        ax.set_title(r'$\theta(K,t)$'+f'm={m},K={K_},t={t_s_time:.02f}',fontsize=15)
+    ani = FuncAnimation(fig, Update, frames=To_animate, interval=50)
+    return ani
+
+
+def phase_cylindrical_animation(df, To_animate, Check_K, m):
+    int_ = np.linspace(0, 1, 100)
+    sin = lambda x: np.sin(x)
+    cos = lambda x: np.cos(x)
+    color = plt.cm.viridis(int_)
+    sorted_color = lambda x: color[np.searchsorted(int_, x)]
+    K_, t_s = To_animate[0]
+    ts_ = df["ts"].iloc[0]
+    rs_ = df["rs"]
+    color_ = rs_.apply(sorted_color)
+    df = df.loc[Check_K]
+    df_sin = df["theta_s"].apply(sin)
+    df_cos = df["theta_s"].apply(cos)
+    N = df_sin.iloc[0].shape[1]
+    omega = df["Omega"][K_]
+
+    fig = plt.figure(facecolor="white")
+    ax = fig.add_subplot(111, aspect="equal")
+    ax.set_xlim(-1.1, 1.1)
+    ax.set_ylim(-1.1, 1.1)
+    ax.tick_params(labelleft=False, left=False, labelbottom=False, bottom=False)
+
+    ax.set_ylabel(r"$sin(\theta)$", fontsize=13)
+    ax.set_xlabel(r"$cos(\theta)$", fontsize=13)
+    t_s_time = ts_[t_s]
+    ax.set_title(r"$\theta(K,t)$" + f"m={m},K={K_},t={t_s_time:.02f}", fontsize=15)
+    sca = ax.scatter(
+        (df_cos[K_][t_s]), (df_sin[K_][t_s]), c=omega, vmin=-1, vmax=1, s=3
+    )
+    divider = make_axes_locatable(ax)
+    rax = divider.append_axes("right", size="5%", pad=0.1)
+    cax = divider.append_axes("right", size="5%", pad=0.35)
+    cbar = fig.colorbar(sca, cax=cax, ax=cax, orientation="vertical", extend="both")
+    cbar.set_label("Natural frequency($\omega$)", fontsize=12)
+
+    (rbar,) = rax.bar(0, rs_[K_][t_s], color=color_[K_][t_s])
+    rax.set_ylim(0, 1)
+    rax.set_title("r")
+    rax.tick_params(
+        labelleft=False,
+        left=False,
+        labelright=True,
+        right=True,
+        labelbottom=False,
+        bottom=False,
+    )
+    fig.tight_layout()
+
+    def Update(To_animate):
+        K_, t_s = To_animate
+        t_s_time = ts_[t_s]
+        sca.set_offsets(np.c_[(df_sin[K_][t_s]), (df_cos[K_][t_s])])
+        rbar.set_height(rs_[K_][t_s])
+        rbar.set_color(color_[K_][t_s])
+        ax.set_title(r"$\theta(K,t)$" + f"m={m},K={K_},t={t_s_time:.02f}", fontsize=15)
+
     ani = FuncAnimation(fig, Update, frames=To_animate, interval=50)
     return ani
