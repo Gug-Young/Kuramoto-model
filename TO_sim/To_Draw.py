@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
+from TO_sim.Check_theorical import Make_theorical_KR
 
 def Time_R(Ks,t_dic,rs_dic,t_r_dic,rs_r_dic,dK,dt,t_end,N,m,mean_time=50,save=False,dist="Quantile Lorentzian",Folder_name="Review",K_draw=(1,13),r_draw=(0,0.9)):
     int_ =np.linspace(0.0,1,len(Ks))
@@ -205,8 +206,8 @@ def Time_R_df(Ksdf,Ksrdf,N,m,mean_time=50,save=False,dist="Quantile Lorentzian",
     if save:
         plt.savefig(f"{Folder_name}/N = {N}, m = {m}, k vs r {dist},{dK},{t_end},dt={dt}.png",transparent=True,dpi = 500)
 
-def Time_R_df_total(Ksdf,Ksrdf,N,m,mean_time=50,save=False,dist="Quantile Lorentzian",Folder_name="Review",K_draw=(1,13),r_draw=(0,0.9)):
-    """_summary_
+def Time_R_df_total(Ksdf,Ksrdf,N,m,mean_time=50,save=False,dist="Quantile Lorentzian",Folder_name="Review",Add_name="",K_draw=(1,13),r_draw=(0,0.9),Draw_theorical = True):
+    """
     To see total time vs order parameter, each time vs order parameter, coupling constant vs mean order parameter.
     At right graph, you can see the error bar, this mean standard deviation of order parameter.
     
@@ -296,9 +297,14 @@ def Time_R_df_total(Ksdf,Ksrdf,N,m,mean_time=50,save=False,dist="Quantile Lorent
         r_r_time_std = np.std(r_r_time_temp)
         r_r_last.append(np.mean(r_r_time_temp))
         r_r_last_std.append(r_r_time_std)
+    if Draw_theorical:
+        Kspace = np.linspace(0.01,K_draw[1],1000)
+        Kfwd,Rfwd,Kbwd,Rbwd = Make_theorical_KR(Kspace,m)
+        plt.plot(Kfwd,Rfwd,'.',alpha=0.4,markersize=1,label="Case 1(Blue,FW)",color = 'Tab:blue')
+        plt.plot(Kbwd,Rbwd,'.',alpha=0.4,markersize=1,label="Case 2(Orange,BW)",color = 'Tab:orange')
         
-    ax31.errorbar(Ks,r_last,yerr=r_last_std,label="Forward",fmt='d',markersize=6,capsize=3)
-    ax31.errorbar(Ks[::-1],r_r_last,yerr=r_r_last_std,label="Backward",fmt='d',markersize=6,capsize=3)
+    ax31.errorbar(Ks,r_last,yerr=r_last_std,label="Forward",fmt='d',markersize=6,capsize=3,color = 'Tab:blue')
+    ax31.errorbar(Ks[::-1],r_r_last,yerr=r_r_last_std,label="Backward",fmt='d',markersize=6,capsize=3,color = 'Tab:orange')
     ax31.legend()
     for ax_ in (ax11,ax12,ax21,ax22):
         ax_.set_ylim(-0.05,1.05)
@@ -309,11 +315,11 @@ def Time_R_df_total(Ksdf,Ksrdf,N,m,mean_time=50,save=False,dist="Quantile Lorent
     fig.tight_layout()
     ax31.set_ylabel("r (order parameter)",fontsize=13)
     ax31.set_xlabel("K (coupling constant)",fontsize=13)
-    ax31.set_title(f"K vs r, m = {m}, N = {N}, dt = {dt}",fontsize=15)
+    ax31.set_title(f"K vs r, m = {m:.02f}, N = {N}, dt = {dt}, dk = {dK:.02f}",fontsize=15)
     divider3 = make_axes_locatable(ax31)
     cax3 = divider3.append_axes("right", size="5%", pad="2%")
     cb3 = fig.colorbar(sca, cax=cax3)
     cb3.set_label("K (coupling constant)")
     fig.tight_layout()
     if save:
-        plt.savefig(f"{Folder_name}/N = {N}, m = {m}, Total {dist},dk = {dK:.02f},{t_end},dt={dt}.png",transparent=True,dpi = 500)     
+        plt.savefig(f"{Folder_name}/N = {N}, m = {m:.02f}, Total {dist},dk = {dK:.02f},{t_end},dt={dt}"+Add_name+".png",transparent=True,dpi = 500) 

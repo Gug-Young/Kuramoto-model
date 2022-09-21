@@ -3,7 +3,8 @@ from matplotlib.animation import FuncAnimation
 import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-
+from TO_sim.Utility import Check_PM_idx_omega
+from TO_sim.Check_theorical import Check_min_omega
 
 def Animation_logabs(Ksdf, Ksrdf, N, m, MaxFrame=10000):
     fig = plt.figure(facecolor="white")
@@ -161,7 +162,7 @@ def Animate_phase(df, To_animate, Check_K, m):
     C_T = lambda theta: (theta + np.pi) % (2 * np.pi) - np.pi
     K_, time_idx = To_animate[0]
     N = df["theta_s"].iloc[0].shape[1]
-    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(18, 5))
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(18, 5));
 
     Target = df.loc[Check_K]
     T_ = Target["theta_s"].apply(C_T)
@@ -169,33 +170,33 @@ def Animate_phase(df, To_animate, Check_K, m):
     dTt_ = Target["dtheta_s"]
     Time = df["ts"].iloc[0]
     T, dTt, time = T_[K_][time_idx], dTt_[K_][time_idx], Time[time_idx]
-    ax1.scatter(T, dTt, s=2, c=O, vmin=-5, vmax=5)
-    ax1.set_ylim(-4, 4)
-    ax1.set_xlim(-np.pi, np.pi)
-    ax1.set_xlabel(r"phase ($\theta$)", fontsize=15)
-    ax1.set_ylabel(r"phase verocity($\dot{\theta}$)", fontsize=15)
+    ax1.scatter(T, dTt, s=2, c=O, vmin=-5, vmax=5);
+    ax1.set_ylim(-4, 4);
+    ax1.set_xlim(-np.pi, np.pi);
+    ax1.set_xlabel(r"phase ($\theta$)", fontsize=15);
+    ax1.set_ylabel(r"phase verocity($\dot{\theta}$)", fontsize=15);
 
-    ax2.scatter(T, O, c=O, s=2, vmin=-5, vmax=5)
-    ax2.set_xlim(-np.pi, np.pi)
-    ax2.set_ylim(-4, 4)
-    ax2.set_xlabel(r"phase ($\theta$)", fontsize=15)
-    ax2.set_ylabel(r"Natural frequency($\omega$)", fontsize=15)
+    ax2.scatter(T, O, c=O, s=2, vmin=-5, vmax=5);
+    ax2.set_xlim(-np.pi, np.pi);
+    ax2.set_ylim(-4, 4);
+    ax2.set_xlabel(r"phase ($\theta$)", fontsize=15);
+    ax2.set_ylabel(r"Natural frequency($\omega$)", fontsize=15);
 
-    sca = ax3.scatter(dTt, O, c=O, s=2, vmin=-5, vmax=5)
-    ax3.set_ylim(-4, 4)
-    ax3.set_xlim(-4, 4)
-    ax3.set_xlabel(r"phase verocity($\dot{\theta}$)", fontsize=15)
-    ax3.set_ylabel(r"Natural frequency($\omega$)", fontsize=15)
+    sca = ax3.scatter(dTt, O, c=O, s=2, vmin=-5, vmax=5);
+    ax3.set_ylim(-4, 4);
+    ax3.set_xlim(-4, 4);
+    ax3.set_xlabel(r"phase verocity($\dot{\theta}$)", fontsize=15);
+    ax3.set_ylabel(r"Natural frequency($\omega$)", fontsize=15);
 
-    divider = make_axes_locatable(ax3)
-    cax = divider.append_axes("right", size="5%", pad=0.05)
-    cbar = fig.colorbar(sca, cax=cax, orientation="vertical", extend="both")
-    cbar.set_label("Natural frequency($\omega$)", fontsize=15)
-    fig.suptitle(f"N={N},m={m},K={K_},time={time}", fontsize=21)
-    ax1.set_title(f"phase vs phase vel.", fontsize=18)
-    ax2.set_title(f"phase vs Natural freq.", fontsize=18)
-    ax3.set_title(f"phase vel. vs Natural freq.", fontsize=18)
-    fig.tight_layout()
+    divider = make_axes_locatable(ax3);
+    cax = divider.append_axes("right", size="5%", pad=0.05);
+    cbar = fig.colorbar(sca, cax=cax, orientation="vertical", extend="both");
+    cbar.set_label("Natural frequency($\omega$)", fontsize=15);
+    fig.suptitle(f"N={N},m={m},K={K_},time={time}", fontsize=21);
+    ax1.set_title(f"phase vs phase vel.", fontsize=18);
+    ax2.set_title(f"phase vs Natural freq.", fontsize=18);
+    ax3.set_title(f"phase vel. vs Natural freq.", fontsize=18);
+    fig.tight_layout();
 
     def Animation_phase(K_time):
         K_, time_idx = K_time
@@ -282,6 +283,9 @@ def ddtheta_animation(df, To_animate, Check_K, m):
     KR_ridx = KR_.apply(O_rset)
     KMR_lidx = KMR_.apply(O_lset)
     KMR_ridx = KMR_.apply(O_rset)
+    min_omega = Check_min_omega(m)
+    P_omega_idx,M_omega_idx = Check_PM_idx_omega(omega,min_omega)
+    ax.vlines((M_omega_idx, P_omega_idx),min_,max_,color='black',ls='--')
 
     (kr_l,) = ax.plot(
         [KR_lidx[K_][t_s], KR_lidx[K_][t_s]],
@@ -389,7 +393,9 @@ def dtheta_animation(df, To_animate, Check_K, m):
     KR_ridx = KR_.apply(O_rset)
     KMR_lidx = KMR_.apply(O_lset)
     KMR_ridx = KMR_.apply(O_rset)
-
+    min_omega = Check_min_omega(m)
+    P_omega_idx,M_omega_idx = Check_PM_idx_omega(omega,min_omega)
+    ax.vlines((M_omega_idx, P_omega_idx),min_,max_,color='black',ls='--')
     (kr_l,) = plt.plot(
         [KR_lidx[K_][t_s], KR_lidx[K_][t_s]],
         [min_, max_],
@@ -493,7 +499,9 @@ def theta_animation(df, To_animate, Check_K, m):
     KR_ridx = KR_.apply(O_rset)
     KMR_lidx = KMR_.apply(O_lset)
     KMR_ridx = KMR_.apply(O_rset)
-
+    min_omega = Check_min_omega(m)
+    P_omega_idx,M_omega_idx = Check_PM_idx_omega(omega,min_omega)
+    ax.vlines((M_omega_idx, P_omega_idx),min_,max_,color='black',ls='--')
     (kr_l,) = plt.plot(
         [KR_lidx[K_][t_s], KR_lidx[K_][t_s]],
         [min_, max_],
