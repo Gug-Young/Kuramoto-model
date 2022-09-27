@@ -131,7 +131,7 @@ def Hysteresis_pd(
         Ksrdf : (Backward)simulationed data(pandas data frame), order parameter r, times, theta, dtheta and omega
     """
     K_start, K_end = K_span
-    Ks = np.round(np.arange(K_start, K_end + dK, dK),2)
+    Ks = np.round(np.arange(K_start, K_end + dK/2, dK),2)
     dtheta_init = np.zeros(N)
     if dist == "Normal":
         theta_init, omega_init, Kc = Normal(N, 0, 1, seed=seed)
@@ -178,7 +178,7 @@ def Hysteresis_pd(
     theta_r_init, dtheta_r_init = theta_s[-1], dtheta_s[-1]
 
     dKr = -dK
-    Ksr = np.round(np.arange(K_end, K_start + dKr, dKr),2)
+    Ksr = np.round(np.arange(K_end, K_start + dKr/2, dKr),2)
     Ksrdf = pd.DataFrame({"Omega":Ksr,"theta_s":Ksr,"dtheta_s":Ksr,"rs":Ksr,"ts":Ksr},index=Ksr,dtype=object)
     num_r = 0
     for K in tqdm(Ksr):
