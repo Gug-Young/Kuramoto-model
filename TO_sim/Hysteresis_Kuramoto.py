@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from tqdm.notebook import tqdm
 import pandas as pd
-from TO_sim.__Private__ import MY_slack_sender
+from TO_sim.Private import MY_slack_sender
 
 def Hysteresis(
     m, N=500, K_span=(0.1, 12.5), dK=0.2, dt=0.1, t_end=1000, dist="Quantile Lorentzian"
