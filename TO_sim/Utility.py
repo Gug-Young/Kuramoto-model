@@ -4,6 +4,7 @@ from knockknock import slack_sender
 from knockknock import desktop_sender
 from functools import wraps
 from time import time
+from TO_sim.Private import MY_slack_sender
 
 
 def Create_Folder(directory):
@@ -20,12 +21,7 @@ def Check_PM_idx_omega(omega, CHECK):
     return (P, M)
 
 
-webhook_url = (
-    "https://hooks.slack.com/services/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"
-)
-
-
-@slack_sender(webhook_url=webhook_url, channel="#python-notification")
+@MY_slack_sender
 def Slack_Notification():
     pass
 
