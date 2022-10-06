@@ -102,7 +102,6 @@ def Time_R(Ks,t_dic,rs_dic,t_r_dic,rs_r_dic,dK,dt,t_end,N,m,mean_time=50,save=Fa
     plt.tight_layout()
     if save:
         plt.savefig(f"{Folder_name}/N = {N}, m = {m}, k vs r {dist},{dK},{t_end}.png",transparent=True,dpi = 500)
-
 def Time_R_df(Ksdf,Ksrdf,N,m,mean_time=50,save=False,dist="Quantile Lorentzian",Folder_name="Review",K_draw=(1,13),r_draw=(0,0.9)):
     Ks = Ksdf.index
     Ksr = Ksrdf.index
@@ -323,3 +322,20 @@ def Time_R_df_total(Ksdf,Ksrdf,N,m,mean_time=50,save=False,dist="Quantile Lorent
     fig.tight_layout()
     if save:
         plt.savefig(f"{Folder_name}/N = {N}, m = {m:.02f}, Total {dist},dk = {dK:.02f},{t_end},dt={dt}"+Add_name+".png",transparent=True,dpi = 500) 
+
+from TO_sim.gen_Distribution import Quantile_Lorentzian   
+def draw_theta_omega(theta,seed):
+    fig = plt.figure()
+    _,omega,_ = Quantile_Lorentzian(N, 0, 1)
+    sca = plt.scatter(theta,omega,c=omega,vmin=-4,vmax=4)
+    plt.ylim(-4,4)
+    ax = plt.gca()
+    divider = make_axes_locatable(ax)
+    cax = divider.append_axes('right', size='5%', pad=0.05)
+    cbar =fig.colorbar(sca, cax=cax, orientation='vertical')
+    cbar.set_label(r'$\omega$(natural frequency)',fontsize=13)
+    ax.set_xlabel(r'$\theta$[rad](phase)',fontsize=13)
+    ax.set_ylabel(r'$\omega$[rad/s]'+'\n (natural frequency)',fontsize=13)
+    ax.set_title(r'$\theta$ vs $\omega$'+r', $\theta$'+f' distribution = {seed}',fontsize=15)
+    fig.tight_layout()
+    return fig
