@@ -48,3 +48,4 @@ def Make_theorical_KR(Ks,m,d=1):
                     KF.append(K_)
                     RF.append(R_)
     return KF,RF,KB,RB
+

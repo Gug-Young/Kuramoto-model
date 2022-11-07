@@ -41,3 +41,12 @@ def Quantile_Normal(N, mean=0, sigma=1,seed=None):
     init_omega = np.array([mean +sigma*(2**0.5)*erfinv((2*i - N - 1)/(N+1)) for i in range(1,N+1)])
     Kc = 2 / (np.pi * scs.cauchy.pdf(mean, mean, sigma))
     return init_theta, init_omega, Kc
+
+def Lorentzian(N, mean=0, sigma=1,seed=None):
+    """return theta, omega, Kc"""
+    init_theta = _make_init_theta_(seed,N)
+    if type(seed)==str:seed=None
+    else: seed=seed
+    init_omega = scs.cauchy.rvs(mean, sigma, N,random_state = seed)
+    Kc = 2 / (np.pi * scs.cauchy.pdf(mean, mean, sigma))
+    return init_theta, init_omega, Kc
