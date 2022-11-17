@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
-from TO_sim.Check_theorical import Make_theorical_KR
+from TO_sim.Check_theoretical import Make_theoretical_KR
 
 def Time_R(Ks,t_dic,rs_dic,t_r_dic,rs_r_dic,dK,dt,t_end,N,m,mean_time=50,save=False,dist="Quantile Lorentzian",Folder_name="Review",K_draw=(1,13),r_draw=(0,0.9)):
     int_ =np.linspace(0.0,1,len(Ks))
@@ -205,7 +205,7 @@ def Time_R_df(Ksdf,Ksrdf,N,m,mean_time=50,save=False,dist="Quantile Lorentzian",
     if save:
         plt.savefig(f"{Folder_name}/N = {N}, m = {m}, k vs r {dist},{dK},{t_end},dt={dt}.png",transparent=True,dpi = 500)
 
-def Time_R_df_total(Ksdf,Ksrdf,N,m,mean_time=50,save=False,dist="Quantile Lorentzian",Folder_name="Review",Add_name="",K_draw=(1,13),r_draw=(0,0.9),Draw_theorical = True):
+def Time_R_df_total(Ksdf,Ksrdf,N,m,mean_time=50,save=False,dist="Quantile Lorentzian",Folder_name="Review",Add_name="",K_draw=(1,13),r_draw=(0,0.9),Draw_theoretical = True):
     """
     To see total time vs order parameter, each time vs order parameter, coupling constant vs mean order parameter.
     At right graph, you can see the error bar, this mean standard deviation of order parameter.
@@ -217,7 +217,7 @@ def Time_R_df_total(Ksdf,Ksrdf,N,m,mean_time=50,save=False,dist="Quantile Lorent
         m (float): mass of oscillator that you put in Hysteresis argws.
         mean_time (int, optional): At right graph(`Coupling constant` vs `Order parameter`) you can control mean time. Defaults to 50.
         save (bool, optional): If you want to save file switch this to True. Defaults to False.
-        dist (str, optional): You can change distribution of oscillator's natural frequency. So it will be change the theorical Kc(critical coupling constant). Defaults to "Quantile Lorentzian". optional `"Lorentzian"`,`"Quantile Lorentzian"`, `"Nomal",`"Quantile Normal"`
+        dist (str, optional): You can change distribution of oscillator's natural frequency. So it will be change the theoretical Kc(critical coupling constant). Defaults to "Quantile Lorentzian". optional `"Lorentzian"`,`"Quantile Lorentzian"`, `"Nomal",`"Quantile Normal"`
         Folder_name (str, optional): Folder name where you want to save. Defaults to "Review".
         K_draw (tuple, optional): K xlim. Defaults to (1,13).
         r_draw (tuple, optional): r ylim. Defaults to (0,0.9).
@@ -296,9 +296,9 @@ def Time_R_df_total(Ksdf,Ksrdf,N,m,mean_time=50,save=False,dist="Quantile Lorent
         r_r_time_std = np.std(r_r_time_temp)
         r_r_last.append(np.mean(r_r_time_temp))
         r_r_last_std.append(r_r_time_std)
-    if Draw_theorical:
+    if Draw_theoretical:
         Kspace = np.linspace(0.01,K_draw[1],1000)
-        Kfwd,Rfwd,Kbwd,Rbwd = Make_theorical_KR(Kspace,m)
+        Kfwd,Rfwd,Kbwd,Rbwd = Make_theoretical_KR(Kspace,m)
         plt.plot(Kfwd,Rfwd,'.',alpha=0.4,markersize=1,label="Case 1(Blue,FW)",color = 'Tab:blue')
         plt.plot(Kbwd,Rbwd,'.',alpha=0.4,markersize=1,label="Case 2(Orange,BW)",color = 'Tab:orange')
         
@@ -324,7 +324,7 @@ def Time_R_df_total(Ksdf,Ksrdf,N,m,mean_time=50,save=False,dist="Quantile Lorent
         plt.savefig(f"{Folder_name}/N = {N}, m = {m:.02f}, Total {dist},dk = {dK:.02f},{t_end},dt={dt}"+Add_name+".png",transparent=True,dpi = 500) 
 
 from TO_sim.gen_Distribution import Quantile_Lorentzian   
-def draw_theta_omega(theta,seed):
+def draw_theta_omega(theta,seed,N=500):
     fig = plt.figure()
     _,omega,_ = Quantile_Lorentzian(N, 0, 1)
     sca = plt.scatter(theta,omega,c=omega,vmin=-4,vmax=4)
@@ -339,3 +339,213 @@ def draw_theta_omega(theta,seed):
     ax.set_title(r'$\theta$ vs $\omega$'+r', $\theta$'+f' distribution = {seed}',fontsize=15)
     fig.tight_layout()
     return fig
+
+def Draw_slicing_graph(df,m,reverse=False,save=True,Folder_name ='Review',dt = 0.1,Slice_time=15,dK=0.2):
+    Ks = df.index
+    slicing = lambda x,sec:x[-int(sec/dt):]
+    sliced_r = df.rs.apply(slicing,sec=50)
+    def make_marker(x):
+        x[0,:]=+20
+        x[1,:]=-20
+        x[2,:]=+20
+        return x
+    ST = Slice_time
+    data = np.array([make_marker(df.dtheta_s.iloc[i][-ST*10:,:]) for i in range(len(Ks))])
+    data_rs = [df.rs.iloc[i][-ST*10:] for i in range(len(Ks))]
+    A = np.concatenate(data,axis=0)
+    rs_total = np.concatenate(data_rs,axis=0)
+    ts_total = np.arange(len(rs_total))*0.1
+    ts_marker = np.arange(len(Ks))*ST
+    Ks_marker = np.arange(len(Ks))*0.2 +0.1
+    RS = np.split(rs_total,len(Ks))
+    TS = np.split(ts_total,len(Ks))
+    fig = plt.figure(figsize=(15,5),dpi=200)
+    int_ =np.linspace(0.0,1,len(Ks))
+    if reverse: 
+        int_ = int_[::-1]
+    color = plt.cm.viridis(int_)
+    plt.subplot(211)
+    im11 = plt.imshow(A.T,origin='lower',extent=[Ks[0],Ks[-1],0,500],vmin=-2,vmax=2,aspect='auto')
+    plt.xlabel('K : coupling constant',fontsize=13)
+    plt.ylabel('$i$-th oscillator',fontsize=13)
+    # plt.vlines(Ks_marker,[0],[500],ls=':',color='red',alpha=0.3)
+    plt.hlines(250,[Ks[0]],[Ks[-1]],ls=':',color='black',alpha=0.3)
+    if reverse:
+        ax = plt.gca()
+        ax.invert_xaxis()
+
+
+    ################# additional axes #############
+    ax11 = plt.gca()
+    divider11 = make_axes_locatable(ax11)
+    cax11 = divider11.append_axes("right", size="1%", pad=0.05)
+    colorbar2 = fig.colorbar(im11, cax=cax11, orientation="vertical", extend="both")
+    colorbar2.set_label(r'$\dot{\theta}$: phase vel.')
+
+    ############### New Graph ###################
+    plt.subplot(212)
+    # plt.plot(ts_total,rs_total)
+    sca = plt.scatter(-1*np.ones(len(Ks)),-1*np.ones(len(Ks)),c = Ks,s=0)
+    for i,(t,r) in enumerate(zip(TS,RS)):
+        plt.plot(t,r,color=color[i])
+    plt.ylim(0,0.9)
+    plt.xlim(0,ts_total[-1])
+    plt.ylabel('r : order parameter',fontsize=15)
+    if reverse:
+        ax = plt.gca()
+        ax.invert_xaxis()
+        plt.xlabel("time [s] ($\infty \leftarrow 0$)",fontsize=15)
+        
+    else:
+        plt.xlabel(r"time [s] ($0 \rightarrow \infty$)",fontsize=15)
+    plt.vlines(ts_marker,[0],[1],ls=':',color='red',alpha=0.3,label=f'slicing last {ST}s each K')
+    plt.legend()
+    ################# additional axes #############
+    ax2 = plt.gca()
+    divider2 = make_axes_locatable(ax2)
+    cax2 = divider2.append_axes("right", size="1%", pad=0.05)
+    # cax2.axis('off')
+    colorbar2 =fig.colorbar(sca, cax=cax2, orientation="vertical")
+    colorbar2.set_label('K')
+
+    plt.suptitle(f'm = {m}, dK = {dK}, N = 500',y=0.95,fontsize=18)
+    plt.tight_layout()
+    # plt.savefig(DF+f'm ={m} t vs r + K vs phase vel reverse.png',dpi=400)
+    if save:
+        if reverse:
+            plt.savefig(Folder_name+f'm ={m} t vs r + K vs phase vel backward.png',dpi=400,transparent=True)
+        else:
+            plt.savefig(Folder_name+f'm ={m} t vs r + K vs phase vel foward.png',dpi=400,transparent=True)
+    plt.show()
+    
+            
+from TO_sim.Check_theoretical import *
+class Draw_theoretical():
+    def __init__(self,m):
+        self.m = m
+        Ks = np.linspace(1,13,1000)
+        KF,RF,KB,RB = map(np.array,Make_theoretical_KR(Ks,m))
+        self.KF =KF
+        self.KB =KB
+        self.RF =RF
+        self.RB =RB
+        First = RB[0]
+        idx = np.where(RB>First)
+        notidx = np.where(RB<First)
+        self.RBU = RB[idx]
+        self.KBU = KB[idx]
+        self.RBD = RB[notidx]
+        self.KBD = KB[notidx]
+    def backward(self):
+        if self.m==0:
+            plt.plot(self.KB,self.RB,color = 'Tab:Orange',label='Backward theoretical')
+        else:
+            plt.plot(self.KBU,self.RBU,color = 'Tab:Orange',label='Backward theoretical')
+            plt.plot(self.KBD,self.RBD,color = 'Tab:Orange')
+
+    def foward(self):
+        plt.plot(self.KF,self.RF,color = 'Tab:blue',label='Forward theoretical')
+
+    def total(self):
+        if self.m==0:
+            plt.plot(self.KF,self.RF,color = 'Tab:blue',label='Forward theoretical')
+            plt.plot(self.KB,self.RB,color = 'Tab:Orange',label='Backward theoretical')
+        else:
+            plt.plot(self.KF,self.RF,color = 'Tab:blue',label='Forward theoretical')
+            plt.plot(self.KBU,self.RBU,color = 'Tab:Orange',label='Backward theoretical')
+            plt.plot(self.KBD,self.RBD,color = 'Tab:Orange')
+    
+            
+            
+def Draw_mean_graph(df,m,Folder_name ='Review',reverse=False,save=True,dK=0.2,Slicing_time=50):
+    ST = Slicing_time
+    Ks = df.index
+    Draw_ = Draw_theoretical(m)
+    data = np.array([(np.mean(df.dtheta_s.iloc[i][-ST*10:,:],axis=0)) for i in range(len(Ks))])
+    data_rs = [np.mean(df.rs.iloc[i][-ST*10:]) for i in range(len(Ks))]
+    data_std = [np.std(df.rs.iloc[i][-ST*10:]) for i in range(len(Ks))]
+    fig = plt.figure(figsize=(15,5),dpi=300)
+    int_ =np.linspace(0.0,1,len(Ks))
+    if reverse: 
+        int_ = int_[::-1]
+    color = plt.cm.viridis(int_)
+    plt.subplot(211)
+    im11 = plt.imshow(data.T,origin='lower',extent=[Ks[0],Ks[-1],0,500],vmin=-2,vmax=2,aspect='auto',cmap='viridis')
+    plt.xlabel('K : coupling constant',fontsize=13)
+    plt.ylabel('$i$-th oscillator',fontsize=13)
+    plt.hlines(250,[Ks[0]],[Ks[-1]],ls=':',color='black',alpha=0.3)
+    # plt.grid()
+    if reverse:
+        ax = plt.gca()
+        ax.invert_xaxis()
+    ################# additional axes #############
+    ax11 = plt.gca()
+    divider11 = make_axes_locatable(ax11)
+    cax11 = divider11.append_axes("right", size="1%", pad=0.05)
+    colorbar2 = fig.colorbar(im11, cax=cax11, orientation="vertical", extend="both")
+    colorbar2.set_label(r'$\dot{\theta}$: phase vel.')
+
+    ############### K vs r ###################
+    plt.subplot(212)
+    
+    
+    plt.ylim(0,0.9)
+    plt.xlim(Ks[0],Ks[-1])
+    plt.ylabel('r : order parameter',fontsize=15)
+    plt.grid()
+    plt.xlabel('K : coupling constant',fontsize=13)
+    
+    if reverse:
+        # sca = plt.scatter(Ks,data_rs,c=Ks,marker='.')
+        plt.errorbar(Ks,data_rs,data_std,fmt='.',alpha=0.3,color='tab:orange',capsize=2,label='Case 2(Orange,BW)')
+        ax = plt.gca()
+        Draw_.backward()
+        ax.invert_xaxis()
+    else:
+        # sca = plt.scatter(Ks,data_rs,c=Ks,marker='.')
+        plt.errorbar(Ks,data_rs,data_std,fmt='.',alpha=0.3,color='tab:blue',capsize=2,label='Case 1(Blue,FW)')
+        Draw_.foward()
+    plt.legend()
+    ################# additional axes #############
+    ax2 = plt.gca()
+    divider2 = make_axes_locatable(ax2)
+    cax2 = divider2.append_axes("right", size="1%", pad=0.05)
+    cax2.axis('off')
+    # colorbar2 =fig.colorbar(sca, cax=cax2, orientation="vertical")
+    colorbar2.set_label('K')
+
+    plt.suptitle(f'm = {m}, dK = {dK}, N = 500',y=0.95,fontsize=18)
+    plt.tight_layout()
+    # plt.savefig(DF+f'm ={m} t vs r + K vs phase vel reverse.png',dpi=400)
+    if save:
+        if reverse:
+            plt.savefig(Folder_name+f'm ={m}, dK={dK} K vs r + K vs phase vel backward.png',dpi=400,transparent=True)
+        else:
+            plt.savefig(Folder_name+f'm ={m}, dK={dK} K vs r + K vs phase vel foward.png',dpi=400,transparent=True)
+    plt.show()
+    
+            
+def Draw_simple_Kr(df,rdf,m,Folder_name ='Review',save=True,dK=0.2,Slicing_time=50):
+    ST = Slicing_time
+    Ks = df.index
+    Ksr = rdf.index
+    Draw_ = Draw_theoretical(m)
+    data_rs = [np.mean(df.rs.iloc[i][-ST*10:]) for i in range(len(Ks))]
+    data_rrs = [np.mean(rdf.rs.iloc[i][-ST*10:]) for i in range(len(Ks))]
+
+    Draw_.total()
+    plt.plot(Ks,data_rs,'.',label=r"$Forward$",markersize=6,color = 'Tab:Blue')
+    plt.plot(Ksr,data_rrs,'.',label=r"$Backward$",markersize=6,color = 'Tab:Orange')
+
+    plt.title(f'K vs r graph, m = {m}',fontsize= 15)
+    plt.grid()
+    plt.legend()    
+    plt.xlim(1,13)
+    plt.ylim(0,0.9)
+
+    plt.xlabel('K : Coupling constant',fontsize=13)
+    plt.ylabel('r : Order parameter',fontsize=13)
+    plt.tight_layout()
+    if save:
+        plt.savefig(Folder_name+f'simple ver. Hystersis m={m},dK = {dK}.png',dpi=400,transparent=True)
+    plt.show()
