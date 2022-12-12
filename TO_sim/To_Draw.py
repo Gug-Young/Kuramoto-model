@@ -345,11 +345,13 @@ def Draw_slicing_graph(df,m,reverse=False,save=True,Folder_name ='Review',dt = 0
     slicing = lambda x,sec:x[-int(sec/dt):]
     sliced_r = df.rs.apply(slicing,sec=50)
     def make_marker(x):
+        x = x.copy()
         x[0,:]=+20
         x[1,:]=-20
         x[2,:]=+20
         return x
     ST = Slice_time
+    
     data = np.array([make_marker(df.dtheta_s.iloc[i][-ST*10:,:]) for i in range(len(Ks))])
     data_rs = [df.rs.iloc[i][-ST*10:] for i in range(len(Ks))]
     A = np.concatenate(data,axis=0)
@@ -365,7 +367,7 @@ def Draw_slicing_graph(df,m,reverse=False,save=True,Folder_name ='Review',dt = 0
         int_ = int_[::-1]
     color = plt.cm.viridis(int_)
     plt.subplot(211)
-    im11 = plt.imshow(A.T,origin='lower',extent=[Ks[0],Ks[-1],0,500],vmin=-2,vmax=2,aspect='auto')
+    im11 = plt.imshow(A.T,origin='lower',extent=[Ks[0],Ks[-1],0,500],vmin=-3,vmax=3,aspect='auto')
     plt.xlabel('K : coupling constant',fontsize=13)
     plt.ylabel('$i$-th oscillator',fontsize=13)
     # plt.vlines(Ks_marker,[0],[500],ls=':',color='red',alpha=0.3)
@@ -436,27 +438,103 @@ class Draw_theoretical():
         self.KBU = KB[idx]
         self.RBD = RB[notidx]
         self.KBD = KB[notidx]
-    def backward(self):
+    def backward(self,label = True):
         if self.m==0:
-            plt.plot(self.KB,self.RB,color = 'Tab:Orange',label='Backward theoretical')
+            if label:
+                plt.plot(self.KB,self.RB,color = 'Tab:Orange',label='Backward theoretical')
+            else:
+                plt.plot(self.KB,self.RB,color = 'Tab:Orange') 
         else:
-            plt.plot(self.KBU,self.RBU,color = 'Tab:Orange',label='Backward theoretical')
-            plt.plot(self.KBD,self.RBD,color = 'Tab:Orange')
+            if label:
+                plt.plot(self.KBU,self.RBU,color = 'Tab:Orange',label='Backward theoretical')
+                plt.plot(self.KBD,self.RBD,color = 'Tab:Orange')
+            else:
+                plt.plot(self.KBU,self.RBU,color = 'Tab:Orange')
+                plt.plot(self.KBD,self.RBD,color = 'Tab:Orange')
+                
 
-    def foward(self):
-        plt.plot(self.KF,self.RF,color = 'Tab:blue',label='Forward theoretical')
+    def foward(self,label = True):
+        if label:
+            plt.plot(self.KF,self.RF,color = 'Tab:blue',label='Forward theoretical')
+        else:
+            plt.plot(self.KF,self.RF,color = 'Tab:blue')
+            
 
-    def total(self):
+    def total(self,label=True):
+        if label:    
+            if self.m==0:
+                plt.plot(self.KF,self.RF,color = 'Tab:blue',label='Forward theoretical')
+                plt.plot(self.KB,self.RB,color = 'Tab:Orange',label='Backward theoretical')
+            else:
+                plt.plot(self.KF,self.RF,color = 'Tab:blue',label='Forward theoretical')
+                plt.plot(self.KBU,self.RBU,color = 'Tab:Orange',label='Backward theoretical')
+                plt.plot(self.KBD,self.RBD,color = 'Tab:Orange')
+        else:
+            if self.m==0:
+                plt.plot(self.KF,self.RF,color = 'Tab:blue')
+                plt.plot(self.KB,self.RB,color = 'Tab:Orange')
+            else:
+                plt.plot(self.KF,self.RF,color = 'Tab:blue')
+                plt.plot(self.KBU,self.RBU,color = 'Tab:Orange')
+                plt.plot(self.KBD,self.RBD,color = 'Tab:Orange')
+            
+import parmap
+from TO_sim.analytical.order_parameter import  Make_emparical_KR
+class Draw_theoretical_wData():
+    def __init__(self,m,dist="normal"):
+        self.m = m
+        KF,RF,KB,RB = Make_emparical_KR(m,dist='normal')
+        self.KF =KF
+        self.KB =KB
+        self.RF =RF
+        self.RB =RB
+        First = RB[0]
+        idx = np.where(RB>First)
+        notidx = np.where(RB<First)
+        self.RBU = RB[idx]
+        self.KBU = KB[idx]
+        self.RBD = RB[notidx]
+        self.KBD = KB[notidx]
+    def backward(self,label = True):
         if self.m==0:
-            plt.plot(self.KF,self.RF,color = 'Tab:blue',label='Forward theoretical')
-            plt.plot(self.KB,self.RB,color = 'Tab:Orange',label='Backward theoretical')
+            if label:
+                plt.plot(self.KB,self.RB,color = 'Tab:Orange',label='Backward theoretical')
+            else:
+                plt.plot(self.KB,self.RB,color = 'Tab:Orange') 
         else:
+            if label:
+                plt.plot(self.KBU,self.RBU,color = 'Tab:Orange',label='Backward theoretical')
+                plt.plot(self.KBD,self.RBD,color = 'Tab:Orange')
+            else:
+                plt.plot(self.KBU,self.RBU,color = 'Tab:Orange')
+                plt.plot(self.KBD,self.RBD,color = 'Tab:Orange')
+                
+
+    def foward(self,label = True):
+        if label:
             plt.plot(self.KF,self.RF,color = 'Tab:blue',label='Forward theoretical')
-            plt.plot(self.KBU,self.RBU,color = 'Tab:Orange',label='Backward theoretical')
-            plt.plot(self.KBD,self.RBD,color = 'Tab:Orange')
-    
+        else:
+            plt.plot(self.KF,self.RF,color = 'Tab:blue')
             
-            
+
+    def total(self,label=True):
+        if label:    
+            if self.m==0:
+                plt.plot(self.KF,self.RF,color = 'Tab:blue',label='Forward theoretical')
+                plt.plot(self.KB,self.RB,color = 'Tab:Orange',label='Backward theoretical')
+            else:
+                plt.plot(self.KF,self.RF,color = 'Tab:blue',label='Forward theoretical')
+                plt.plot(self.KBU,self.RBU,color = 'Tab:Orange',label='Backward theoretical')
+                plt.plot(self.KBD,self.RBD,color = 'Tab:Orange')
+        else:
+            if self.m==0:
+                plt.plot(self.KF,self.RF,color = 'Tab:blue')
+                plt.plot(self.KB,self.RB,color = 'Tab:Orange')
+            else:
+                plt.plot(self.KF,self.RF,color = 'Tab:blue')
+                plt.plot(self.KBU,self.RBU,color = 'Tab:Orange')
+                plt.plot(self.KBD,self.RBD,color = 'Tab:Orange')
+
 def Draw_mean_graph(df,m,Folder_name ='Review',reverse=False,save=True,dK=0.2,Slicing_time=50):
     ST = Slicing_time
     Ks = df.index
@@ -470,7 +548,7 @@ def Draw_mean_graph(df,m,Folder_name ='Review',reverse=False,save=True,dK=0.2,Sl
         int_ = int_[::-1]
     color = plt.cm.viridis(int_)
     plt.subplot(211)
-    im11 = plt.imshow(data.T,origin='lower',extent=[Ks[0],Ks[-1],0,500],vmin=-2,vmax=2,aspect='auto',cmap='viridis')
+    im11 = plt.imshow(data.T,origin='lower',extent=[Ks[0],Ks[-1],0,500],vmin=-3,vmax=3,aspect='auto',cmap='viridis')
     plt.xlabel('K : coupling constant',fontsize=13)
     plt.ylabel('$i$-th oscillator',fontsize=13)
     plt.hlines(250,[Ks[0]],[Ks[-1]],ls=':',color='black',alpha=0.3)
@@ -525,21 +603,25 @@ def Draw_mean_graph(df,m,Folder_name ='Review',reverse=False,save=True,dK=0.2,Sl
     plt.show()
     
             
-def Draw_simple_Kr(df,rdf,m,Folder_name ='Review',save=True,dK=0.2,Slicing_time=50):
+def Draw_simple_Kr(df,rdf,m,Folder_name ='Review',save=True,dK=0.2,Slicing_time=50,label = True,alpha = 1):
     ST = Slicing_time
     Ks = df.index
     Ksr = rdf.index
-    Draw_ = Draw_theoretical(m)
     data_rs = [np.mean(df.rs.iloc[i][-ST*10:]) for i in range(len(Ks))]
     data_rrs = [np.mean(rdf.rs.iloc[i][-ST*10:]) for i in range(len(Ks))]
 
-    Draw_.total()
-    plt.plot(Ks,data_rs,'.',label=r"$Forward$",markersize=6,color = 'Tab:Blue')
-    plt.plot(Ksr,data_rrs,'.',label=r"$Backward$",markersize=6,color = 'Tab:Orange')
-
+    Draw_ = Draw_theoretical(m)
+    Draw_.total(label)
+    if label:
+        plt.plot(Ks,data_rs,'.',label=r"$Forward$",markersize=6,color = 'Tab:Blue',alpha=alpha)
+        plt.plot(Ksr,data_rrs,'.',label=r"$Backward$",markersize=6,color = 'Tab:Orange',alpha=alpha)
+        plt.legend()  
+    else: 
+        plt.plot(Ks,data_rs,'.',markersize=6,color = 'Tab:Blue',alpha=alpha)
+        plt.plot(Ksr,data_rrs,'.',markersize=6,color = 'Tab:Orange',alpha=alpha)
     plt.title(f'K vs r graph, m = {m}',fontsize= 15)
     plt.grid()
-    plt.legend()    
+      
     plt.xlim(1,13)
     plt.ylim(0,0.9)
 
@@ -548,4 +630,3 @@ def Draw_simple_Kr(df,rdf,m,Folder_name ='Review',save=True,dK=0.2,Slicing_time=
     plt.tight_layout()
     if save:
         plt.savefig(Folder_name+f'simple ver. Hystersis m={m},dK = {dK}.png',dpi=400,transparent=True)
-    plt.show()
