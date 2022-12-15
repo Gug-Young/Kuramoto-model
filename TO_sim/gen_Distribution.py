@@ -35,6 +35,15 @@ def Normal(N, mean=0, sigma=1,seed=None):
     Kc = 2 / (np.pi * scs.norm.pdf(mean, mean, sigma))
     return init_theta, init_omega, Kc
 
+def delta(N, omega0 = 0 ,seed=None):
+    """return theta, omega, Kc"""
+    init_theta = _make_init_theta_(seed,N)
+    if type(seed)==str:seed=None
+    else: seed=seed
+    init_omega = omega0*np.ones(N)
+    Kc = 0
+    return init_theta, init_omega, Kc
+
 def Quantile_Normal(N, mean=0, sigma=1,seed=None):
     """return theta, omega, Kc"""
     init_theta = _make_init_theta_(seed,N)

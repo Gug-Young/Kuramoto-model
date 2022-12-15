@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from TO_sim.Utility import Check_PM_idx_omega
-from TO_sim.Check_theorical import Check_min_omega
+from TO_sim.Check_theoretical import Check_min_omega
 
 def Animation_logabs(Ksdf, Ksrdf, N, m, MaxFrame=10000):
     fig = plt.figure(facecolor="white")
@@ -275,38 +275,72 @@ def ddtheta_animation(df, To_animate, Check_K, m):
     sca = ax.scatter(np.arange(N), (df_[K_][t_s]), c=omega, vmin=-4, vmax=4, s=3)
     KR = lambda df, K: df["rs"][K] * K
     KMR = lambda x, m: (4 / np.pi) * np.sqrt(x / m)
-    KR_ = KR(df, Check_K)
-    KMR_ = KR_.apply(KMR, m=m)
     O_lset = lambda x: np.searchsorted(omega, -x)
     O_rset = lambda x: np.searchsorted(omega, x)
+    KR_ = KR(df, Check_K)
+    KMR_ = KR_.apply(KMR, m=m)
     KR_lidx = KR_.apply(O_lset)
     KR_ridx = KR_.apply(O_rset)
+    # KR_lidx = N - KR_ridx
     KMR_lidx = KMR_.apply(O_lset)
     KMR_ridx = KMR_.apply(O_rset)
+    # KMR_lidx = N - KMR_ridx
     min_omega = Check_min_omega(m)
-    P_omega_idx,M_omega_idx = Check_PM_idx_omega(omega,min_omega)
-    ax.vlines((M_omega_idx, P_omega_idx),min_,max_,color='black',ls='--')
-
-    (kr_l,) = ax.plot(
+    
+    KMR_lidx_max=KMR_lidx.apply(np.max)
+    KMR_lidx_min=KMR_lidx.apply(np.min)
+    KMR_ridx_max=KMR_ridx.apply(np.max)
+    KMR_ridx_min=KMR_ridx.apply(np.min)
+    
+    KR_lidx_max=KR_lidx.apply(np.max)
+    KR_lidx_min=KR_lidx.apply(np.min)
+    KR_ridx_max=KR_ridx.apply(np.max)
+    KR_ridx_min=KR_ridx.apply(np.min)
+    
+    (kr_l,) = plt.plot(
         [KR_lidx[K_][t_s], KR_lidx[K_][t_s]],
         [min_, max_],
         ls="--",
         color="tab:orange",
         label=r"$\Omega_{D}$(Depinning freq.)",
     )
-    (kr_r,) = ax.plot(
+    (kr_r,) = plt.plot(
         [KR_ridx[K_][t_s], KR_ridx[K_][t_s]], [min_, max_], ls="--", color="tab:orange"
     )
+    (kr_rmax,) = plt.plot(
+        [KR_ridx_max[K_], KR_ridx_max[K_]], [min_, max_], ls='--', color="tab:orange",alpha=0.3
+    )
+    (kr_lmax,) = plt.plot(
+        [KR_lidx_max[K_], KR_lidx_max[K_]], [min_, max_], ls='--', color="tab:orange",alpha=0.3
+    )
+    (kr_rmin,) = plt.plot(
+        [KR_ridx_min[K_], KR_ridx_min[K_]], [min_, max_], ls='--', color="tab:orange",alpha=0.3
+    )
+    (kr_lmin,) = plt.plot(
+        [KR_lidx_min[K_], KR_lidx_min[K_]], [min_, max_], ls='--', color="tab:orange",alpha=0.3
+    )
 
-    (kmr_l,) = ax.plot(
+    (kmr_l,) = plt.plot(
         [KMR_lidx[K_][t_s], KMR_lidx[K_][t_s]],
         [min_, max_],
         ls="--",
         color="tab:blue",
         label=r"$\Omega_{P}$(Pinning freq.)",
     )
-    (kmr_r,) = ax.plot(
+    (kmr_r,) = plt.plot(
         [KMR_ridx[K_][t_s], KMR_ridx[K_][t_s]], [min_, max_], ls="--", color="tab:blue"
+    )
+    (kmr_rmax,) = plt.plot(
+        [KMR_ridx_max[K_], KMR_ridx_max[K_]], [min_, max_], ls='--', color="tab:blue",alpha=0.3
+    )
+    (kmr_lmax,) = plt.plot(
+        [KMR_lidx_max[K_], KMR_lidx_max[K_]], [min_, max_], ls='--', color="tab:blue",alpha=0.3
+    )
+    (kmr_rmin,) = plt.plot(
+        [KMR_ridx_min[K_], KMR_ridx_min[K_]], [min_, max_], ls='--', color="tab:blue",alpha=0.3
+    )
+    (kmr_lmin,) = plt.plot(
+        [KMR_lidx_min[K_], KMR_lidx_min[K_]], [min_, max_], ls='--', color="tab:blue",alpha=0.3
     )
 
     divider = make_axes_locatable(ax)
@@ -345,13 +379,23 @@ def ddtheta_animation(df, To_animate, Check_K, m):
         kr_r.set_xdata([KR_ridx[K_][t_s], KR_ridx[K_][t_s]])
         kmr_l.set_xdata([KMR_lidx[K_][t_s], KMR_lidx[K_][t_s]])
         kmr_r.set_xdata([KMR_ridx[K_][t_s], KMR_ridx[K_][t_s]])
+        kmr_rmin.set_xdata([KMR_ridx_min[K_], KMR_ridx_min[K_]])
+        kmr_rmax.set_xdata([KMR_ridx_max[K_], KMR_ridx_max[K_]])
+        kmr_lmin.set_xdata([KMR_lidx_min[K_], KMR_lidx_min[K_]])
+        kmr_lmax.set_xdata([KMR_lidx_max[K_], KMR_lidx_max[K_]])
+        
+        kr_rmin.set_xdata([KR_ridx_min[K_], KR_ridx_min[K_]])
+        kr_rmax.set_xdata([KR_ridx_max[K_], KR_ridx_max[K_]])
+        kr_lmin.set_xdata([KR_lidx_min[K_], KR_lidx_min[K_]])
+        kr_lmax.set_xdata([KR_lidx_max[K_], KR_lidx_max[K_]])
+        
         title.set_text(r"$\ddot{\theta}(K,t)$" + f" m={m},K={K_},t={t_s_time:.02f}")
 
     ani = FuncAnimation(fig, Update, frames=To_animate, interval=50)
     return ani
 
 
-def dtheta_animation(df, To_animate, Check_K, m):
+def dtheta_animation(df, To_animate, Check_K, m,max_divider = 100):
     int_ = np.linspace(0, 1, 100)
     color = plt.cm.viridis(int_)
     sorted_color = lambda x: color[np.searchsorted(int_, x)]
@@ -364,11 +408,11 @@ def dtheta_animation(df, To_animate, Check_K, m):
     df = df.loc[Check_K]
     df_ = df["dtheta_s"]
     omega = df["Omega"][K_]
-    max_ = df_.apply(np.max).max() / 100
-    min_ = df_.apply(np.min).min() / 100
+    max_ = df_.apply(np.max).max() / max_divider
+    min_ = df_.apply(np.min).min() / max_divider
 
     N = df_.iloc[0].shape[1]
-    print("max_/100,min_/100")
+    print(f"max_/{max_divider},min_/{max_divider}")
     print(max_, min_)
 
     fig = plt.figure(facecolor="white")
@@ -381,21 +425,32 @@ def dtheta_animation(df, To_animate, Check_K, m):
     title = ax.set_title(
         r"$\dot{\theta}(K,t)$" + f" m={m},K={K_},t={t_s_time:.02f}", fontsize=15, pad=30
     )
-    sca = ax.scatter(np.arange(1, N + 1), (df_[K_][t_s]), c=omega, vmin=-4, vmax=4, s=3)
+    sca = ax.scatter(np.arange(0, N), (df_[K_][t_s]), c=omega, vmin=-4, vmax=4, s=3)
     divider = make_axes_locatable(ax)
-    KR = lambda df, K: df["rs"][K] * K
-    KMR = lambda x, m: (4 / np.pi) * np.sqrt(x / m)
-    KR_ = KR(df, Check_K)
-    KMR_ = KR_.apply(KMR, m=m)
     O_lset = lambda x: np.searchsorted(omega, -x)
     O_rset = lambda x: np.searchsorted(omega, x)
+    KR = lambda df, K: df["rs"][K] * K
+    KMR = lambda x, m: (4 / np.pi) * np.sqrt(x / m) # x = KR
+    KR_ = KR(df, Check_K)
+    KMR_ = KR_.apply(KMR, m=m)
     KR_lidx = KR_.apply(O_lset)
     KR_ridx = KR_.apply(O_rset)
+    # KR_lidx = N - KR_ridx
     KMR_lidx = KMR_.apply(O_lset)
     KMR_ridx = KMR_.apply(O_rset)
+    # KMR_lidx = N - KMR_ridx
     min_omega = Check_min_omega(m)
-    P_omega_idx,M_omega_idx = Check_PM_idx_omega(omega,min_omega)
-    ax.vlines((M_omega_idx, P_omega_idx),min_,max_,color='black',ls='--')
+    
+    KMR_lidx_max=KMR_lidx.apply(np.max)
+    KMR_lidx_min=KMR_lidx.apply(np.min)
+    KMR_ridx_max=KMR_ridx.apply(np.max)
+    KMR_ridx_min=KMR_ridx.apply(np.min)
+    
+    KR_lidx_max=KR_lidx.apply(np.max)
+    KR_lidx_min=KR_lidx.apply(np.min)
+    KR_ridx_max=KR_ridx.apply(np.max)
+    KR_ridx_min=KR_ridx.apply(np.min)
+    
     (kr_l,) = plt.plot(
         [KR_lidx[K_][t_s], KR_lidx[K_][t_s]],
         [min_, max_],
@@ -405,6 +460,18 @@ def dtheta_animation(df, To_animate, Check_K, m):
     )
     (kr_r,) = plt.plot(
         [KR_ridx[K_][t_s], KR_ridx[K_][t_s]], [min_, max_], ls="--", color="tab:orange"
+    )
+    (kr_rmax,) = plt.plot(
+        [KR_ridx_max[K_], KR_ridx_max[K_]], [min_, max_], ls='--', color="tab:orange",alpha=0.3
+    )
+    (kr_lmax,) = plt.plot(
+        [KR_lidx_max[K_], KR_lidx_max[K_]], [min_, max_], ls='--', color="tab:orange",alpha=0.3
+    )
+    (kr_rmin,) = plt.plot(
+        [KR_ridx_min[K_], KR_ridx_min[K_]], [min_, max_], ls='--', color="tab:orange",alpha=0.3
+    )
+    (kr_lmin,) = plt.plot(
+        [KR_lidx_min[K_], KR_lidx_min[K_]], [min_, max_], ls='--', color="tab:orange",alpha=0.3
     )
 
     (kmr_l,) = plt.plot(
@@ -417,12 +484,17 @@ def dtheta_animation(df, To_animate, Check_K, m):
     (kmr_r,) = plt.plot(
         [KMR_ridx[K_][t_s], KMR_ridx[K_][t_s]], [min_, max_], ls="--", color="tab:blue"
     )
-    ax.legend(
-        bbox_to_anchor=(0.0, 1.01, 1, 0.1),
-        loc="lower left",
-        mode="expand",
-        borderaxespad=0,
-        ncol=3,
+    (kmr_rmax,) = plt.plot(
+        [KMR_ridx_max[K_], KMR_ridx_max[K_]], [min_, max_], ls='--', color="tab:blue",alpha=0.3
+    )
+    (kmr_lmax,) = plt.plot(
+        [KMR_lidx_max[K_], KMR_lidx_max[K_]], [min_, max_], ls='--', color="tab:blue",alpha=0.3
+    )
+    (kmr_rmin,) = plt.plot(
+        [KMR_ridx_min[K_], KMR_ridx_min[K_]], [min_, max_], ls='--', color="tab:blue",alpha=0.3
+    )
+    (kmr_lmin,) = plt.plot(
+        [KMR_lidx_min[K_], KMR_lidx_min[K_]], [min_, max_], ls='--', color="tab:blue",alpha=0.3
     )
 
     rax = divider.append_axes("right", size="5%", pad=0.1)
@@ -453,6 +525,10 @@ def dtheta_animation(df, To_animate, Check_K, m):
         kr_r.set_xdata([KR_ridx[K_][t_s], KR_ridx[K_][t_s]])
         kmr_l.set_xdata([KMR_lidx[K_][t_s], KMR_lidx[K_][t_s]])
         kmr_r.set_xdata([KMR_ridx[K_][t_s], KMR_ridx[K_][t_s]])
+        kmr_rmin.set_xdata([KMR_ridx_min[K_], KMR_ridx_min[K_]])
+        kmr_rmax.set_xdata([KMR_ridx_max[K_], KMR_ridx_max[K_]])
+        kmr_lmin.set_xdata([KMR_lidx_min[K_], KMR_lidx_min[K_]])
+        kmr_lmax.set_xdata([KMR_lidx_max[K_], KMR_lidx_max[K_]])
         title.set_text(r"$\dot{\theta}(K,t)$" + f" m={m},K={K_},t={t_s_time:.02f}")
 
     ani = FuncAnimation(fig, Update, frames=To_animate, interval=50)
@@ -497,11 +573,21 @@ def theta_animation(df, To_animate, Check_K, m):
     KMR_ = KR_.apply(KMR, m=m)
     KR_lidx = KR_.apply(O_lset)
     KR_ridx = KR_.apply(O_rset)
+    # KR_lidx = N - KR_ridx
     KMR_lidx = KMR_.apply(O_lset)
     KMR_ridx = KMR_.apply(O_rset)
+    # KMR_lidx = N - KMR_ridx
     min_omega = Check_min_omega(m)
-    P_omega_idx,M_omega_idx = Check_PM_idx_omega(omega,min_omega)
-    ax.vlines((M_omega_idx, P_omega_idx),min_,max_,color='black',ls='--')
+    
+    KMR_lidx_max=KMR_lidx.apply(np.max)
+    KMR_lidx_min=KMR_lidx.apply(np.min)
+    KMR_ridx_max=KMR_ridx.apply(np.max)
+    KMR_ridx_min=KMR_ridx.apply(np.min)
+    
+    KR_lidx_max=KR_lidx.apply(np.max)
+    KR_lidx_min=KR_lidx.apply(np.min)
+    KR_ridx_max=KR_ridx.apply(np.max)
+    KR_ridx_min=KR_ridx.apply(np.min)
     (kr_l,) = plt.plot(
         [KR_lidx[K_][t_s], KR_lidx[K_][t_s]],
         [min_, max_],
@@ -511,6 +597,18 @@ def theta_animation(df, To_animate, Check_K, m):
     )
     (kr_r,) = plt.plot(
         [KR_ridx[K_][t_s], KR_ridx[K_][t_s]], [min_, max_], ls="--", color="tab:orange"
+    )
+    (kr_rmax,) = plt.plot(
+        [KR_ridx_max[K_], KR_ridx_max[K_]], [min_, max_], ls='--', color="tab:orange",alpha=0.3
+    )
+    (kr_lmax,) = plt.plot(
+        [KR_lidx_max[K_], KR_lidx_max[K_]], [min_, max_], ls='--', color="tab:orange",alpha=0.3
+    )
+    (kr_rmin,) = plt.plot(
+        [KR_ridx_min[K_], KR_ridx_min[K_]], [min_, max_], ls='--', color="tab:orange",alpha=0.3
+    )
+    (kr_lmin,) = plt.plot(
+        [KR_lidx_min[K_], KR_lidx_min[K_]], [min_, max_], ls='--', color="tab:orange",alpha=0.3
     )
 
     (kmr_l,) = plt.plot(
@@ -523,6 +621,19 @@ def theta_animation(df, To_animate, Check_K, m):
     (kmr_r,) = plt.plot(
         [KMR_ridx[K_][t_s], KMR_ridx[K_][t_s]], [min_, max_], ls="--", color="tab:blue"
     )
+    (kmr_rmax,) = plt.plot(
+        [KMR_ridx_max[K_], KMR_ridx_max[K_]], [min_, max_], ls='--', color="tab:blue",alpha=0.3
+    )
+    (kmr_lmax,) = plt.plot(
+        [KMR_lidx_max[K_], KMR_lidx_max[K_]], [min_, max_], ls='--', color="tab:blue",alpha=0.3
+    )
+    (kmr_rmin,) = plt.plot(
+        [KMR_ridx_min[K_], KMR_ridx_min[K_]], [min_, max_], ls='--', color="tab:blue",alpha=0.3
+    )
+    (kmr_lmin,) = plt.plot(
+        [KMR_lidx_min[K_], KMR_lidx_min[K_]], [min_, max_], ls='--', color="tab:blue",alpha=0.3
+    )
+    
     ax.legend(
         bbox_to_anchor=(0.0, 1.01, 1, 0.1),
         loc="lower left",
@@ -560,6 +671,16 @@ def theta_animation(df, To_animate, Check_K, m):
         kr_r.set_xdata([KR_ridx[K_][t_s], KR_ridx[K_][t_s]])
         kmr_l.set_xdata([KMR_lidx[K_][t_s], KMR_lidx[K_][t_s]])
         kmr_r.set_xdata([KMR_ridx[K_][t_s], KMR_ridx[K_][t_s]])
+        kmr_rmin.set_xdata([KMR_ridx_min[K_], KMR_ridx_min[K_]])
+        kmr_rmax.set_xdata([KMR_ridx_max[K_], KMR_ridx_max[K_]])
+        kmr_lmin.set_xdata([KMR_lidx_min[K_], KMR_lidx_min[K_]])
+        kmr_lmax.set_xdata([KMR_lidx_max[K_], KMR_lidx_max[K_]])
+        
+        kr_rmin.set_xdata([KR_ridx_min[K_], KR_ridx_min[K_]])
+        kr_rmax.set_xdata([KR_ridx_max[K_], KR_ridx_max[K_]])
+        kr_lmin.set_xdata([KR_lidx_min[K_], KR_lidx_min[K_]])
+        kr_lmax.set_xdata([KR_lidx_max[K_], KR_lidx_max[K_]])
+        
         title.set_text(r"$\theta(K,t)$" + f" m={m},K={K_},t={t_s_time:.02f}")
 
     ani = FuncAnimation(fig, Update, frames=To_animate, interval=50)
