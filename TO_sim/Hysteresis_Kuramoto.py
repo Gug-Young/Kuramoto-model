@@ -369,7 +369,9 @@ def Hysteresis_pd_perturbation(
     elif dist == "Quantile Lorentzian":
         theta_init, omega_init, Kc = Quantile_Lorentzian(N, 0, 1, seed=seed)
     elif dist == "Quantile Normal":
-        theta_init, omega_init, Kc = Quantile_Normal(N, mean=0, sigma=1,seed=seed)
+        theta_init, omega_init, Kc = Quantile_Normal(N, mean=0, sigma=1,seeds=seed)
+    elif dist == "Identical":
+        theta_init, omega_init, Kc = Identical(N, 0 , seed=seed)
     Ksdf = pd.DataFrame({"Omega":Ks,"theta_s":Ks,"dtheta_s":Ks,"rs":Ks,"ts":Ks},index=Ks,dtype=object)
     num = 0
     omega_init = np.sort(omega_init)
