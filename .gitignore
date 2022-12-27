@@ -1,6 +1,7 @@
 *.npy
 *.pkl
 *.mp4
+
 TO_sim/__Private__.py
 TO_sim/Private.py
 
@@ -44,6 +45,10 @@ Temporary Items
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
+<<<<<<< HEAD
+=======
+*.pyc
+>>>>>>> window
 *$py.class
 
 # C extensions
