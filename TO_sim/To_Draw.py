@@ -482,7 +482,7 @@ from TO_sim.analytical.order_parameter import  Make_empirical_KR
 class Draw_theoretical_wData():
     def __init__(self,m,dist="normal"):
         self.m = m
-        KF,RF,KB,RB = Make_empirical_KR(m,dist='normal')
+        KF,RF,KB,RB = Make_empirical_KR(m,dist=dist)
         self.KF =KF
         self.KB =KB
         self.RF =RF
