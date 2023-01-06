@@ -55,11 +55,20 @@ def Make_empirical_KR(m,dist='normal'):
         gen_dist = g_c
     X = np.logspace(np.log10(0.1),np.log10(50),num=1000,base=10)
     Ks = np.linspace(0.01,13,20000)
-    r_l1=parmap.map(r_lock1,X,m=m,g=gen_dist,pm_processes=core,pm_pbar=False)
-    r_l2=parmap.map(r_lock2,X,m=m,g=gen_dist,pm_processes=core,pm_pbar=False)
-    r_d1=parmap.map(r_drift1,X,m=m,g=gen_dist,pm_processes=core,pm_pbar=False)
-    r_d2=parmap.map(r_drift2,X,m=m,g=gen_dist,pm_processes=core,pm_pbar=False)
-    r_l2,r_d2,r_l1,r_d1 = map(np.array,[r_l2,r_d2,r_l1,r_d1])
+    if m != 0:
+        r_l1=parmap.map(r_lock1,X,m=m,g=gen_dist,pm_processes=core,pm_pbar=False)
+        r_l2=parmap.map(r_lock2,X,m=m,g=gen_dist,pm_processes=core,pm_pbar=False)
+        r_d1=parmap.map(r_drift1,X,m=m,g=gen_dist,pm_processes=core,pm_pbar=False)
+        r_d2=parmap.map(r_drift2,X,m=m,g=gen_dist,pm_processes=core,pm_pbar=False)
+        r_l2,r_d2,r_l1,r_d1 = map(np.array,[r_l2,r_d2,r_l1,r_d1])
+    else:
+        r_l1=parmap.map(r_lock1,X,m=m,g=gen_dist,pm_processes=core,pm_pbar=False)
+        r_l2=parmap.map(r_lock2,X,m=m,g=gen_dist,pm_processes=core,pm_pbar=False)
+        r_l2,r_l1 = map(np.array,[r_l2,r_l1])
+        
+        r_d1=0*r_l1
+        r_d2=0*r_l2
+        
     r_case1 = r_l1+r_d1
     r_case2 = r_l2+r_d2
 
