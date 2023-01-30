@@ -2,7 +2,7 @@ from TO_sim.Sol_Kuramoto import *
 from TO_sim.gen_Distribution import *
 import matplotlib.pyplot as plt
 import numpy as np
-from tqdm.notebook import tqdm
+from tqdm import tqdm
 import pandas as pd
 from TO_sim.Private import MY_slack_sender
 
@@ -43,7 +43,7 @@ def Hysteresis(
     t_dic = {}
 
     num = 0
-    for K in tqdm(Ks):
+    for K in Ks:
         if num == 0:
             theta_s, dtheta_s, omega, rs, t = Sol_Kuramoto_mf(
                 N,
@@ -80,7 +80,7 @@ def Hysteresis(
     Ksr = np.arange(K_end, K_start + dKr, dKr)
 
     num_r = 0
-    for K in tqdm(Ksr):
+    for K in Ksr:
         if num_r == 0:
             theta_s, dtheta_s, omega, rs, t = Sol_Kuramoto_mf(
                 N,
@@ -597,10 +597,11 @@ def Hysteresis_pd_init_pvel(
     if Init_dtheta:
 
         dtheta_init = scs.cauchy.rvs(0, 1, N,random_state = Init_dtheta_seed)
+        dtheta_init = scs.cauchy.rvs(0, 1, N,random_state = Init_dtheta_seed)
     if shuffle:
         np.random.seed(shuffle_seed)
         np.random.shuffle(theta_init)
-    for K in tqdm(Ks):
+    for K in Ks:
         if num == 0:
             theta_s, dtheta_s, omega, rs, t = Sol_Kuramoto_mf(
                 N,
@@ -638,7 +639,7 @@ def Hysteresis_pd_init_pvel(
     Ksr = np.round(np.arange(K_end, K_start + dKr/2, dKr),2)
     Ksrdf = pd.DataFrame({"Omega":Ksr,"theta_s":Ksr,"dtheta_s":Ksr,"rs":Ksr,"ts":Ksr},index=Ksr,dtype=object)
     num_r = 0
-    for K in tqdm(Ksr):
+    for K in Ksr:
         if num_r == 0:
             theta_s, dtheta_s, omega, rs, t = Sol_Kuramoto_mf(
                 N,
