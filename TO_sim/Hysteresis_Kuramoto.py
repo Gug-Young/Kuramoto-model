@@ -560,8 +560,10 @@ def Hysteresis_pd_sim(
 
 
 def Hysteresis_pd_init_pvel(
-    m, N=500, K_span=(0.1, 12.5), dK=0.2, dt=0.1, t_end=1000, dist="Quantile Lorentzian",seed=None, shuffle = False, shuffle_seed = None, Init_dtheta=True,Init_dtheta_seed = None
-):
+    m, N=500, K_span=(0.1, 12.5), dK=0.2, dt=0.1, t_end=1000, dist="Quantile Lorentzian",seed=None, \
+        shuffle = False, shuffle_seed = None, Init_dtheta=True,Init_dtheta_seed = None,\
+        second_initial_state = False,Init_dtheta_omega = False, #초기속도 설정해주기 위해서 
+): 
     r"""_summary_
 
     Args:
@@ -595,9 +597,9 @@ def Hysteresis_pd_init_pvel(
     num = 0
     omega_init = np.sort(omega_init)
     if Init_dtheta:
-
         dtheta_init = scs.cauchy.rvs(0, 1, N,random_state = Init_dtheta_seed)
-        dtheta_init = scs.cauchy.rvs(0, 1, N,random_state = Init_dtheta_seed)
+    if Init_dtheta_omega:
+        dtheta_init = omega_init
     if shuffle:
         np.random.seed(shuffle_seed)
         np.random.shuffle(theta_init)
@@ -632,8 +634,11 @@ def Hysteresis_pd_init_pvel(
         Ksdf["Omega"][K] = omega
         Ksdf["ts"][K] = t + num * t_end
         num += 1
-
-    theta_r_init, dtheta_r_init = theta_s[-1], dtheta_s[-1]
+    if second_initial_state:
+        theta_r_init, dtheta_r_init = theta_init, np.zeros_like(omega_init)
+    else:
+        theta_r_init, dtheta_r_init = theta_s[-1], dtheta_s[-1]
+        
 
     dKr = -dK
     Ksr = np.round(np.arange(K_end, K_start + dKr/2, dKr),2)
