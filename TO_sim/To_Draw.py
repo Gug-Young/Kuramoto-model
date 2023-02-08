@@ -441,46 +441,46 @@ class Draw_theoretical():
     def backward(self,label = True):
         if self.m==0:
             if label:
-                bw = plt.plot(self.KB,self.RB,color = 'Tab:Orange',label='Backward theoretical')
+                bw, = plt.plot(self.KB,self.RB,color = 'Tab:Orange',label='Backward theoretical')
             else:
-                bw = plt.plot(self.KB,self.RB,color = 'Tab:Orange') 
+                bw, = plt.plot(self.KB,self.RB,color = 'Tab:Orange') 
             return bw
         else:
             if label:
-                bw1 = plt.plot(self.KBU,self.RBU,color = 'Tab:Orange',label='Backward theoretical')
-                bw2 = plt.plot(self.KBD,self.RBD,color = 'Tab:Orange')
+                bw1, = plt.plot(self.KBU,self.RBU,color = 'Tab:Orange',label='Backward theoretical')
+                bw2, = plt.plot(self.KBD,self.RBD,color = 'Tab:Orange')
             else:
-                bw1 = plt.plot(self.KBU,self.RBU,color = 'Tab:Orange')
-                bw2 = plt.plot(self.KBD,self.RBD,color = 'Tab:Orange')
+                bw1, = plt.plot(self.KBU,self.RBU,color = 'Tab:Orange')
+                bw2, = plt.plot(self.KBD,self.RBD,color = 'Tab:Orange')
             return bw1,bw2
 
     def foward(self,label = True):
         if label:
-            fw = plt.plot(self.KF,self.RF,color = 'Tab:blue',label='Forward theoretical')
+            fw, = plt.plot(self.KF,self.RF,color = 'Tab:blue',label='Forward theoretical')
         else:
-            fw =plt.plot(self.KF,self.RF,color = 'Tab:blue')
+            fw, =plt.plot(self.KF,self.RF,color = 'Tab:blue')
         return fw
 
     def total(self,label=True):
         if label:    
             if self.m==0:
-                fw = plt.plot(self.KF,self.RF,color = 'Tab:blue',label='Forward theoretical')
-                bw = plt.plot(self.KB,self.RB,color = 'Tab:Orange',label='Backward theoretical')
+                fw, = plt.plot(self.KF,self.RF,color = 'Tab:blue',label='Forward theoretical')
+                bw, = plt.plot(self.KB,self.RB,color = 'Tab:Orange',label='Backward theoretical')
                 return fw,bw
             else:
-                fw =plt.plot(self.KF,self.RF,color = 'Tab:blue',label='Forward theoretical')
-                bw1 = plt.plot(self.KBU,self.RBU,color = 'Tab:Orange',label='Backward theoretical')
-                bw2 = plt.plot(self.KBD,self.RBD,color = 'Tab:Orange')
+                fw, =plt.plot(self.KF,self.RF,color = 'Tab:blue',label='Forward theoretical')
+                bw1, = plt.plot(self.KBU,self.RBU,color = 'Tab:Orange',label='Backward theoretical')
+                bw2, = plt.plot(self.KBD,self.RBD,color = 'Tab:Orange')
                 return fw,(bw1,bw2)
         else:
             if self.m==0:
-                fw = plt.plot(self.KF,self.RF,color = 'Tab:blue')
-                bw = plt.plot(self.KB,self.RB,color = 'Tab:Orange')
+                fw, = plt.plot(self.KF,self.RF,color = 'Tab:blue')
+                bw, = plt.plot(self.KB,self.RB,color = 'Tab:Orange')
                 return fw,bw
             else:
-                fw = plt.plot(self.KF,self.RF,color = 'Tab:blue')
-                bw1 = plt.plot(self.KBU,self.RBU,color = 'Tab:Orange')
-                bw2 = plt.plot(self.KBD,self.RBD,color = 'Tab:Orange')
+                fw, = plt.plot(self.KF,self.RF,color = 'Tab:blue')
+                bw1, = plt.plot(self.KBU,self.RBU,color = 'Tab:Orange')
+                bw2, = plt.plot(self.KBD,self.RBD,color = 'Tab:Orange')
                 return fw,(bw1,bw2)
 from TO_sim.analytical.order_parameter import  Make_empirical_KR
 class Draw_theoretical_wData():
@@ -501,46 +501,46 @@ class Draw_theoretical_wData():
     def backward(self,label = True):
         if self.m==0:
             if label:
-                bw = plt.plot(self.KB,self.RB,color = 'Tab:Orange',label='Backward theoretical')
+                bw, = plt.plot(self.KB,self.RB,color = 'Tab:Orange',label='Backward theoretical')
             else:
-                bw = plt.plot(self.KB,self.RB,color = 'Tab:Orange') 
+                bw, = plt.plot(self.KB,self.RB,color = 'Tab:Orange') 
             return bw
         else:
             if label:
-                bw1 = plt.plot(self.KBU,self.RBU,color = 'Tab:Orange',label='Backward theoretical')
-                bw2 = plt.plot(self.KBD,self.RBD,color = 'Tab:Orange')
+                bw1, = plt.plot(self.KBU,self.RBU,color = 'Tab:Orange',label='Backward theoretical')
+                bw2, = plt.plot(self.KBD,self.RBD,color = 'Tab:Orange')
             else:
-                bw1 = plt.plot(self.KBU,self.RBU,color = 'Tab:Orange')
-                bw2 = plt.plot(self.KBD,self.RBD,color = 'Tab:Orange')
+                bw1, = plt.plot(self.KBU,self.RBU,color = 'Tab:Orange')
+                bw2, = plt.plot(self.KBD,self.RBD,color = 'Tab:Orange')
             return bw1,bw2
 
     def foward(self,label = True):
         if label:
-            fw = plt.plot(self.KF,self.RF,color = 'Tab:blue',label='Forward theoretical')
+            fw, = plt.plot(self.KF,self.RF,color = 'Tab:blue',label='Forward theoretical')
         else:
-            fw =plt.plot(self.KF,self.RF,color = 'Tab:blue')
+            fw, =plt.plot(self.KF,self.RF,color = 'Tab:blue')
         return fw
 
     def total(self,label=True):
         if label:    
             if self.m==0:
-                fw = plt.plot(self.KF,self.RF,color = 'Tab:blue',label='Forward theoretical')
-                bw = plt.plot(self.KB,self.RB,color = 'Tab:Orange',label='Backward theoretical')
+                fw, = plt.plot(self.KF,self.RF,color = 'Tab:blue',label='Forward theoretical')
+                bw, = plt.plot(self.KB,self.RB,color = 'Tab:Orange',label='Backward theoretical')
                 return fw,bw
             else:
-                fw =plt.plot(self.KF,self.RF,color = 'Tab:blue',label='Forward theoretical')
-                bw1 = plt.plot(self.KBU,self.RBU,color = 'Tab:Orange',label='Backward theoretical')
-                bw2 = plt.plot(self.KBD,self.RBD,color = 'Tab:Orange')
+                fw, =plt.plot(self.KF,self.RF,color = 'Tab:blue',label='Forward theoretical')
+                bw1, = plt.plot(self.KBU,self.RBU,color = 'Tab:Orange',label='Backward theoretical')
+                bw2, = plt.plot(self.KBD,self.RBD,color = 'Tab:Orange')
                 return fw,(bw1,bw2)
         else:
             if self.m==0:
-                fw = plt.plot(self.KF,self.RF,color = 'Tab:blue')
-                bw = plt.plot(self.KB,self.RB,color = 'Tab:Orange')
+                fw, = plt.plot(self.KF,self.RF,color = 'Tab:blue')
+                bw, = plt.plot(self.KB,self.RB,color = 'Tab:Orange')
                 return fw,bw
             else:
-                fw = plt.plot(self.KF,self.RF,color = 'Tab:blue')
-                bw1 = plt.plot(self.KBU,self.RBU,color = 'Tab:Orange')
-                bw2 = plt.plot(self.KBD,self.RBD,color = 'Tab:Orange')
+                fw, = plt.plot(self.KF,self.RF,color = 'Tab:blue')
+                bw1, = plt.plot(self.KBU,self.RBU,color = 'Tab:Orange')
+                bw2, = plt.plot(self.KBD,self.RBD,color = 'Tab:Orange')
                 return fw,(bw1,bw2)
                 
 def Draw_mean_graph(df,m,Folder_name ='Review',reverse=False,save=True,dK=0.2,Slicing_time=50):
