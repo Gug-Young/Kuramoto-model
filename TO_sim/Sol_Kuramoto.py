@@ -1,5 +1,5 @@
 import numpy as np
-from TO_sim.Integrator import RK4
+from TO_sim.Integrator import RK4,RK4_sampling
 from TO_sim.Kuramoto_model import *
 from TO_sim.gen_Distribution import *
 
@@ -41,6 +41,18 @@ def Sol_Kuramoto_theta_dtheta(N,K,m,t_array,p_theta = [], p_dtheta = [], p_omega
     theta_s = result[:,:N]
     dtheta_s = result[:,N:]
     return theta_s,dtheta_s
+
+def Sol_Kuramoto_sampling(N,K,m,t_array,t_sample_idx,p_theta = [], p_dtheta = [], p_omega = []):
+    """
+    멀티프로세스를 효율적으로 돌리기 위한 시스템 경량화
+    """
+    theta, dtheta, omega  =  p_theta, p_dtheta,p_omega
+            
+    result = RK4_sampling(Kuramoto_2nd_mf,np.array([*theta,*dtheta]),t_array,t_sample_idx,args=(omega,N,m,K))
+    theta_s = result[:,:N]
+    dtheta_s = result[:,N:]
+    return theta_s,dtheta_s
+
 
 def Sol_Kuramoto_mf_r_t(N,K,m,tspan,p_theta = [], p_dtheta = [], p_omega = [],dt=0.01,mean=0, sigma =1,distribution = "Lorentzian",seed=None):
     if tuple(map(len,(p_theta,p_dtheta,p_omega)))==(0,0,0):

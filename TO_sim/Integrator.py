@@ -37,6 +37,26 @@ def RK4(f, y0, t, args=()):
         y[i + 1] = y[i] + (h / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4)
     return y
 
+def RK4_sampling(f, y0, t,t_sample_idx, args=()):
+    n = len(t)
+    n_sample = len(t_sample_idx)
+    y_sample = np.zeros((n_sample, len(y0)))
+    num = 0
+    h = t[1] - t[0]
+    y = y0
+    for i in range(n - 1):
+        k1 = f(y, t, *args)
+        k2 = f(y + k1 * h / 2.0, t + h / 2.0, *args)
+        k3 = f(y + k2 * h / 2.0, t + h / 2.0, *args)
+        k4 = f(y + k3 * h, t + h, *args)
+        
+        y = y + (h / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4)
+        if i in t_sample_idx:
+            y_sample[num] = y
+            num +=1
+    return y_sample
+
+
 
 def Modified_Euler(f, y0, t, args=()):
     h = t[1] - t[0]
