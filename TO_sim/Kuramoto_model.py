@@ -20,7 +20,19 @@ def Kuramoto_2nd_mf(Theta,t,omega,N,m,K):
         r,psi = get_order_parameter(theta,N)
         dtheta = omega + K*r*np.sin(psi - theta)
         return np.array([*dtheta,*np.zeros(N)])
-        
+def Kuramoto_2nd_mf_for_solveivp(t,Theta,omega,N,m,K):
+    if m != 0:
+        # print(f"Case m = {m}") 
+        theta,dtheta = Theta[:N],Theta[N:]
+        r,psi = get_order_parameter(theta,N)
+        ddtheta = (1/m)*(-dtheta + omega + K*r*np.sin(psi - theta))
+        return np.array([*dtheta,*ddtheta])
+    else:
+        # print("Case m = 0")
+        theta = Theta[:N]
+        r,psi = get_order_parameter(theta,N)
+        dtheta = omega + K*r*np.sin(psi - theta)
+        return np.array([*dtheta,*np.zeros(N)])
 
 def Kuramoto_2nd(Theta,t,omega,N,mi,m,K):
     if m != 0:
