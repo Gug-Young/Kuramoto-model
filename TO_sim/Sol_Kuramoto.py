@@ -31,7 +31,7 @@ def Sol_Kuramoto_mf(N,K,m,tspan,p_theta = [], p_dtheta = [], p_omega = [],dt=0.0
     rs = Make_order_parameter(theta_s,N)
     return theta_s,dtheta_s,omega,rs,t
 
-def Sol_Kuramoto_theta_dtheta(N,K,m,t_array,p_theta = [], p_dtheta = [], p_omega = []):
+def Sol_Kuramoto_theta_dtheta(K,N,m,t_array,p_theta = [], p_dtheta = [], p_omega = []):
     """
     멀티프로세스를 효율적으로 돌리기 위한 시스템 경량화
     """
