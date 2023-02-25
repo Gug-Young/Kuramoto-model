@@ -28,7 +28,8 @@ def Sol_Kuramoto_mf(N,K,m,tspan,p_theta = [], p_dtheta = [], p_omega = [],dt=0.0
         function = Kuramoto_1st_mf
     else:
         function = Kuramoto_2nd_mf
-    result = RK4(function,np.r_[theta,dtheta],t,args=(omega,N,m,K))
+    r,psi = get_order_parameter(theta,N)
+    result = RK4(function,np.r_[theta,dtheta,r,psi],t,args=(omega,N,m,K))
     theta_s = result[:,:N]
     dtheta_s = result[:,N:2*N]
     rs = result[:,-2]
@@ -43,7 +44,8 @@ def Sol_Kuramoto_theta_dtheta(K,N,m,t_array,p_theta = [], p_dtheta = [], p_omega
         function = Kuramoto_1st_mf
     else:
         function = Kuramoto_2nd_mf
-    result = RK4(function,np.r_[theta,dtheta],t_array,args=(omega,N,m,K))        
+    r,psi = get_order_parameter(theta,N)
+    result = RK4(function,np.r_[theta,dtheta,r,psi],t_array,args=(omega,N,m,K))        
     theta_s = result[:,:N]
     dtheta_s = result[:,N:2*N]
     return theta_s,dtheta_s
@@ -57,7 +59,8 @@ def Sol_Kuramoto_sampling(N,K,m,t_array,t_sample_idx,p_theta = [], p_dtheta = []
         function = Kuramoto_1st_mf
     else:
         function = Kuramoto_2nd_mf
-    result = RK4_sampling(function,np.r_[theta,dtheta],t_array,t_sample_idx,args=(omega,N,m,K))    
+    r,psi = get_order_parameter(theta,N)
+    result = RK4_sampling(function,np.r_[theta,dtheta,r,psi],t_array,t_sample_idx,args=(omega,N,m,K))    
     theta_s = result[:,:N]
     dtheta_s = result[:,N:2*N]
     return theta_s,dtheta_s
@@ -86,9 +89,9 @@ def Sol_Kuramoto_mf_r_t(N,K,m,tspan,p_theta = [], p_dtheta = [], p_omega = [],dt
         function = Kuramoto_1st_mf
     else:
         function = Kuramoto_2nd_mf
-    result = RK4(function,np.array([*theta,*dtheta]),t,args=(omega,N,m,K))
-    theta_s = result[:,:N]
-    rs = Make_order_parameter(theta_s,N)
+    r,psi = get_order_parameter(theta,N)
+    result = RK4(function,np.r_[theta,dtheta,r,psi],t,args=(omega,N,m,K))    
+    rs = result[:,-2]
     return rs,t
 
 def Sol_Kuramoto_mf_rb_t(N,K,m,tspan,p_theta = [], p_dtheta = [], p_omega = [],dt=0.01,mean=0, sigma =1,distribution = "Lorentzian",seed=None):
@@ -109,9 +112,60 @@ def Sol_Kuramoto_mf_rb_t(N,K,m,tspan,p_theta = [], p_dtheta = [], p_omega = [],d
         theta, dtheta, omega  =  p_theta, p_dtheta,p_omega
     theta = np.ones(N)        
     t = np.arange(tspan[0],tspan[1]+dt/2,dt)
-    result = RK4(Kuramoto_2nd_mf,np.r_[theta,dtheta],t,args=(omega,N,m,K))
+    r,psi = get_order_parameter(theta,N)
+    result = RK4(function,np.r_[theta,dtheta,r,psi],t,args=(omega,N,m,K))    
     rs = result[:,:-2]
     return rs,t
+
+
+def Sol_r_Kuramoto_mf(K,N,m,tspan,dt=0.01,mean=0, sigma =1,distribution = "Lorentzian",seed=None):
+    if distribution == "Lorentzian":
+        theta,omega,Kc = Lorentzian(N,mean,sigma,seed)
+        dtheta  =  np.zeros(N)
+    elif distribution == "Quantile Lorentzian":
+        theta,omega,Kc = Quantile_Lorentzian(N,mean,sigma,seed)
+        dtheta  =  np.zeros(N)
+    elif distribution == "Quantile Normal":
+        theta,omega,Kc = Quantile_Normal(N,mean,sigma,seed)
+        dtheta  =  np.zeros(N)
+    else:
+        theta,omega,Kc = Normal(N,mean,sigma,seed)
+        dtheta  =  np.zeros(N)
+    t = np.arange(tspan[0],tspan[1]+dt/2,dt)
+    
+    if m==0:
+        function = Kuramoto_1st_mf
+    else:
+        function = Kuramoto_2nd_mf
+    r,psi = get_order_parameter(theta,N)
+    result = RK4(function,np.r_[theta,dtheta,r,psi],t,args=(omega,N,m,K))   
+    rs = result[:,-2]
+    return rs,t
+
+def Sol_r_Kuramoto_mf_C(K,N,m,tspan,dt=0.01,mean=0, sigma =1,distribution = "Lorentzian",seed=None):
+    if distribution == "Lorentzian":
+        theta,omega,Kc = Lorentzian(N,mean,sigma,seed)
+        dtheta  =  np.zeros(N)
+    elif distribution == "Quantile Lorentzian":
+        theta,omega,Kc = Quantile_Lorentzian(N,mean,sigma,seed)
+        dtheta  =  np.zeros(N)
+    elif distribution == "Quantile Normal":
+        theta,omega,Kc = Quantile_Normal(N,mean,sigma,seed)
+        dtheta  =  np.zeros(N)
+    else:
+        theta,omega,Kc = Normal(N,mean,sigma,seed)
+        dtheta  =  np.zeros(N)
+    if m==0:
+        function = Kuramoto_1st_mf
+    else:
+        function = Kuramoto_2nd_mf
+    t = np.arange(tspan[0],tspan[1]+dt/2,dt)
+    r,psi = get_order_parameter(theta,N)
+    result = RK4(function,np.r_[np.ones(N),np.zeros(N),r,psi],t,args=(omega,N,m,K))
+    rs = result[:,-2]
+    return rs,t
+
+
     
 def Sol_Kuramoto(N,K,m,tspan,dt=0.01,mean=0, sigma =1,distribution = "Lorentzian",seed=None):
     if distribution == "Lorentzian":
@@ -128,61 +182,9 @@ def Sol_Kuramoto(N,K,m,tspan,dt=0.01,mean=0, sigma =1,distribution = "Lorentzian
         dtheta  =  np.zeros(N)
     
     t = np.arange(tspan[0],tspan[1]+dt,dt)
+
     result = RK4(Kuramoto_2nd,np.array([*theta,*np.zeros(N)]),t,args=(omega,N,N-1,m,K))
     theta_s = result[:,:N]
     dtheta_s = result[:,N:2*N]
     rs = result[:,-2]
     return theta_s,dtheta_s,rs,t
-
-def Sol_r_Kuramoto_mf(K,N,m,tspan,dt=0.01,mean=0, sigma =1,distribution = "Lorentzian",seed=None):
-    if distribution == "Lorentzian":
-        theta,omega,Kc = Lorentzian(N,mean,sigma,seed)
-        dtheta  =  np.zeros(N)
-    elif distribution == "Quantile Lorentzian":
-        theta,omega,Kc = Quantile_Lorentzian(N,mean,sigma,seed)
-        dtheta  =  np.zeros(N)
-    elif distribution == "Quantile Normal":
-        theta,omega,Kc = Quantile_Normal(N,mean,sigma,seed)
-        dtheta  =  np.zeros(N)
-    else:
-        theta,omega,Kc = Normal(N,mean,sigma,seed)
-        dtheta  =  np.zeros(N)
-    
-    
-    t = np.arange(tspan[0],tspan[1]+dt/2,dt)
-    
-    if m==0:
-        function = Kuramoto_1st_mf
-    else:
-        function = Kuramoto_2nd_mf
-    result = RK4(function,np.array([*theta,*np.zeros(N)]),t,args=(omega,N,m,K))
-    theta_s = result[:,:N]
-    dtheta_s = result[:,N:]
-    rs = Make_order_parameter(theta_s,N)
-    return rs,t
-
-def Sol_r_Kuramoto_mf_C(K,N,m,tspan,dt=0.01,mean=0, sigma =1,distribution = "Lorentzian",seed=None):
-    if distribution == "Lorentzian":
-        theta,omega,Kc = Lorentzian(N,mean,sigma,seed)
-        dtheta  =  np.zeros(N)
-    elif distribution == "Quantile Lorentzian":
-        theta,omega,Kc = Quantile_Lorentzian(N,mean,sigma,seed)
-        dtheta  =  np.zeros(N)
-    elif distribution == "Quantile Normal":
-        theta,omega,Kc = Quantile_Normal(N,mean,sigma,seed)
-        dtheta  =  np.zeros(N)
-    else:
-        theta,omega,Kc = Normal(N,mean,sigma,seed)
-        dtheta  =  np.zeros(N)
-    
-            
-    t = np.arange(tspan[0],tspan[1]+dt/2,dt)
-    if m==0:
-        function = Kuramoto_1st_mf
-    else:
-        function = Kuramoto_2nd_mf
-    result = RK4(function,np.array([*np.ones(N),*np.zeros(N)]),t,args=(omega,N,m,K))
-    theta_s = result[:,:N]
-    dtheta_s = result[:,N:]
-    rs = Make_order_parameter(theta_s,N)
-    return rs,t
