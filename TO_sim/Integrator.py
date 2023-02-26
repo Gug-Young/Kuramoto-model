@@ -37,6 +37,24 @@ def RK4(f, y0, t, args=()):
         y[i + 1] = y[i] + (h / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4)
     return y
 
+def RK4_r(f, y0, t, args=()):
+    n = len(t)
+    y = np.zeros((n, len(y0)))
+    rs = np.zeros(n)
+    y[0] = y0
+    _,N,_,_ = args
+    rs[0] = abs(1/N*np.sum(np.exp(1j*y0[:N])))
+
+    for i in range(n - 1):
+        h = t[i + 1] - t[i]
+        k1,r = f(y[i], t[i], *args)
+        k2,_ = f(y[i] + k1 * h / 2.0, t[i] + h / 2.0, *args)
+        k3,_ = f(y[i] + k2 * h / 2.0, t[i] + h / 2.0, *args)
+        k4,_ = f(y[i] + k3 * h, t[i] + h, *args)
+        y[i + 1] = y[i] + (h / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4)
+        rs[i+1] = r
+    return y,rs
+
 def RK4_sampling(f, y0, t,t_sample_idx, args=()):
     n = len(t)
     n_sample = len(t_sample_idx)

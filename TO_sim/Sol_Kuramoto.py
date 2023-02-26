@@ -1,5 +1,5 @@
 import numpy as np
-from TO_sim.Integrator import RK4,RK4_sampling
+from TO_sim.Integrator import RK4,RK4_sampling,RK4_r
 from TO_sim.Kuramoto_model import *
 from TO_sim.gen_Distribution import *
 
@@ -25,15 +25,71 @@ def Sol_Kuramoto_mf(N,K,m,tspan,p_theta = [], p_dtheta = [], p_omega = [],dt=0.0
     
     t = np.arange(tspan[0],tspan[1]+dt/2,dt)
     if m==0:
-        function = Kuramoto_1st_mf
+        function = Kuramoto_1st_mf_r
     else:
-        function = Kuramoto_2nd_mf
-    r,psi = get_order_parameter(theta,N)
-    result = RK4(function,np.r_[theta,dtheta,r,psi],t,args=(omega,N,m,K))
+        function = Kuramoto_2nd_mf_r
+    result,rs = RK4_r(function,np.r_[theta,dtheta],t,args=(omega,N,m,K))
     theta_s = result[:,:N]
     dtheta_s = result[:,N:2*N]
-    rs = result[:,-2]
     return theta_s,dtheta_s,omega,rs,t
+
+def Sol_Kuramoto_r(K,N,m,t_array,p_theta = [], p_dtheta = [], p_omega = []):
+    """
+    멀티프로세스를 효율적으로 돌리기 위한 시스템 경량화
+    """
+    theta, dtheta, omega  =  p_theta, p_dtheta,p_omega
+    n = len(t_array)
+    rs = np.zeros((n))
+    r,psi = get_order_parameter(theta,N)
+    rs[0] = r
+    h = t_array[1] - t_array[0]
+    args=(omega,N,m,K)
+    y_temp = np.r_[theta,dtheta]
+    if m==0:
+        f = Kuramoto_1st_mf_r
+    else:
+        f = Kuramoto_2nd_mf_r
+    for i in range(n - 1):
+        t_temp = t_array[i]
+        k1,r = f(y_temp, t_temp, *args)
+        k2,_ = f(y_temp + k1 * h * 0.5, t_temp + h * 0.5, *args)
+        k3,_ = f(y_temp + k2 * h * 0.5, t_temp + h * 0.5, *args)
+        k4,_ = f(y_temp + k3 * h, t_temp + h, *args)
+        y_temp= y_temp + (h / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4)
+        rs[i+1] = r
+
+    return rs
+
+def Sol_Kuramoto_rV(K,N,m,t_array,p_theta = [], p_dtheta = [], p_omega = []):
+    """
+    멀티프로세스를 효율적으로 돌리기 위한 시스템 경량화
+    """
+    theta, dtheta, omega  =  p_theta, p_dtheta,p_omega
+    n = len(t_array)
+    rs = np.zeros((n))
+    Vs = np.zeros((n))
+    r,psi = get_order_parameter(theta,N)
+    rs[0] = r
+    Vs[0] = np.var(dtheta)
+    h = t_array[1] - t_array[0]
+    args=(omega,N,m,K)
+    y_temp = np.r_[theta,dtheta]
+    if m==0:
+        f = Kuramoto_1st_mf_r
+    else:
+        f = Kuramoto_2nd_mf_r
+    for i in range(n - 1):
+        t_temp = t_array[i]
+        k1,r = f(y_temp, t_temp, *args)
+        k2,_ = f(y_temp + k1 * h * 0.5, t_temp + h * 0.5, *args)
+        k3,_ = f(y_temp + k2 * h * 0.5, t_temp + h * 0.5, *args)
+        k4,_ = f(y_temp + k3 * h, t_temp + h, *args)
+        y_temp= y_temp + (h / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4)
+        rs[i+1] = r
+        Vs[i+1] = np.var(y_temp[N:2*N])
+    return rs,Vs
+
+
 
 def Sol_Kuramoto_theta_dtheta(K,N,m,t_array,p_theta = [], p_dtheta = [], p_omega = []):
     """
@@ -59,8 +115,7 @@ def Sol_Kuramoto_sampling(N,K,m,t_array,t_sample_idx,p_theta = [], p_dtheta = []
         function = Kuramoto_1st_mf
     else:
         function = Kuramoto_2nd_mf
-    r,psi = get_order_parameter(theta,N)
-    result = RK4_sampling(function,np.r_[theta,dtheta,r,psi],t_array,t_sample_idx,args=(omega,N,m,K))    
+    result = RK4_sampling(function,np.r_[theta,dtheta],t_array,t_sample_idx,args=(omega,N,m,K))    
     theta_s = result[:,:N]
     dtheta_s = result[:,N:2*N]
     return theta_s,dtheta_s
@@ -89,9 +144,7 @@ def Sol_Kuramoto_mf_r_t(N,K,m,tspan,p_theta = [], p_dtheta = [], p_omega = [],dt
         function = Kuramoto_1st_mf
     else:
         function = Kuramoto_2nd_mf
-    r,psi = get_order_parameter(theta,N)
-    result = RK4(function,np.r_[theta,dtheta,r,psi],t,args=(omega,N,m,K))    
-    rs = result[:,-2]
+    result,rs = RK4_r(function,np.r_[theta,dtheta],t,args=(omega,N,m,K))    
     return rs,t
 
 def Sol_Kuramoto_mf_rb_t(N,K,m,tspan,p_theta = [], p_dtheta = [], p_omega = [],dt=0.01,mean=0, sigma =1,distribution = "Lorentzian",seed=None):
@@ -112,9 +165,7 @@ def Sol_Kuramoto_mf_rb_t(N,K,m,tspan,p_theta = [], p_dtheta = [], p_omega = [],d
         theta, dtheta, omega  =  p_theta, p_dtheta,p_omega
     theta = np.ones(N)        
     t = np.arange(tspan[0],tspan[1]+dt/2,dt)
-    r,psi = get_order_parameter(theta,N)
-    result = RK4(function,np.r_[theta,dtheta,r,psi],t,args=(omega,N,m,K))    
-    rs = result[:,:-2]
+    result,rs = RK4_r(function,np.r_[theta,dtheta],t,args=(omega,N,m,K))    
     return rs,t
 
 
@@ -137,9 +188,7 @@ def Sol_r_Kuramoto_mf(K,N,m,tspan,dt=0.01,mean=0, sigma =1,distribution = "Loren
         function = Kuramoto_1st_mf
     else:
         function = Kuramoto_2nd_mf
-    r,psi = get_order_parameter(theta,N)
-    result = RK4(function,np.r_[theta,dtheta,r,psi],t,args=(omega,N,m,K))   
-    rs = result[:,-2]
+    result,rs = RK4_r(function,np.r_[theta,dtheta],t,args=(omega,N,m,K))   
     return rs,t
 
 def Sol_r_Kuramoto_mf_C(K,N,m,tspan,dt=0.01,mean=0, sigma =1,distribution = "Lorentzian",seed=None):

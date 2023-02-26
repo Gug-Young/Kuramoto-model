@@ -10,16 +10,30 @@ def get_order_parameter(theta,N):
 def Kuramoto_2nd_mf(Theta,t,omega,N,m,K):
     # print(f"Case m = {m}") 
     theta,dtheta,r,psi = Theta[:N],Theta[N:2*N],Theta[-2],Theta[-1]
+    r,psi = get_order_parameter(theta,N)
     ddtheta = (-dtheta + omega + K*r*np.sin(psi - theta))
-    r,psi = get_order_parameter(dtheta,N)
-    return np.r_[dtheta,ddtheta,r,psi]
+    return np.r_[dtheta,ddtheta]
 
 def Kuramoto_1st_mf(Theta,t,omega,N,m,K):
     # print("Case m = 0")
     theta,r,psi = Theta[:N],Theta[-2],Theta[-1]
+    r,psi = get_order_parameter(theta,N)
     dtheta = omega + K*r*np.sin(psi - theta)
-    r,psi = get_order_parameter(dtheta,N)
-    return np.r_[dtheta,np.zeros(N),r,psi]
+    return np.r_[dtheta,np.zeros(N)]
+
+def Kuramoto_2nd_mf_r(Theta,t,omega,N,m,K):
+    # print(f"Case m = {m}") 
+    theta,dtheta = Theta[:N],Theta[N:2*N]
+    r,psi = get_order_parameter(theta,N)
+    ddtheta = (1/m)*(-dtheta + omega + K*r*np.sin(psi - theta))
+    return np.r_[dtheta,ddtheta],r
+
+def Kuramoto_1st_mf_r(Theta,t,omega,N,m,K):
+    # print("Case m = 0")
+    theta= Theta[:N]
+    r,psi = get_order_parameter(theta,N)
+    dtheta = omega + K*r*np.sin(psi - theta)
+    return np.r_[dtheta,np.zeros(N)],r
 
 def Kuramoto_2nd_mf_for_solveivp(t,Theta,omega,N,m,K):
     if m != 0:
