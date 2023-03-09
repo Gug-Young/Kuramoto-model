@@ -1,6 +1,7 @@
 *.npy
 *.pkl
 *.mp4
+*.pyc
 잡다한 연습/*
 TO_sim/__Private__.py
 TO_sim/Private.py
