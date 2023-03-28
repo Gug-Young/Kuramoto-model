@@ -13,9 +13,6 @@ distribution = {
     'Q_Lorentzian':Quantile_Lorentzian
 }
 
-mean = lambda x :np.mean(x[-500:])
-get_std  = lambda x :np.std(x[-500:])
-
 def get_groups(dtheta,sum_time=500):
     dtheta_c = np.cumsum(dtheta,axis=0)
     avg_dtheta = (dtheta_c[sum_time:]-dtheta_c[:-sum_time])/sum_time
@@ -39,8 +36,7 @@ def get_groups(dtheta,sum_time=500):
         groups.append(temp)
     return groups
 
-def make_meanr(Km,N,theta_init,omega,t):
-    K,m = Km
+def make_meanr(K,m,N,theta_init,omega,t):
     theta, dtheta,rs = mf2(K,m=m,N=N,t_array=t,p_theta=theta_init,p_dtheta= omega,p_omega=omega)
     r = mean(rs)
     rstd = get_std(rs)
