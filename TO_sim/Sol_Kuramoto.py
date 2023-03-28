@@ -42,6 +42,24 @@ def Sol_Kuramoto_mf2(K,N,m,t_array,p_theta = [], p_dtheta = [], p_omega = []):
     result,rs = RK4_r(function,np.r_[theta,dtheta],t_array,args=(omega,N,m,K))
     theta_s = result[:,:N]
     dtheta_s = result[:,N:2*N]
+    if m == 0:
+        dt = t_array[1]-t_array[0]
+        dtheta_s = np.diff(theta_s/dt,axis=0)
+    return theta_s,dtheta_s,rs
+
+def Sol_Kuramoto_mK(mK,N,t_array,p_theta = [], p_dtheta = [], p_omega = []):
+    m,K = mK
+    theta, dtheta, omega  =  p_theta, p_dtheta,p_omega
+    if m==0:
+        function = Kuramoto_1st_mf_r
+    else:
+        function = Kuramoto_2nd_mf_r
+    result,rs = RK4_r(function,np.r_[theta,dtheta],t_array,args=(omega,N,m,K))
+    theta_s = result[:,:N]
+    dtheta_s = result[:,N:2*N]
+    if m == 0:
+        dt = t_array[1]-t_array[0]
+        dtheta_s = np.diff(theta_s/dt,axis=0)
     return theta_s,dtheta_s,rs
 
 def Sol_Kuramoto_r(K,N,m,t_array,p_theta = [], p_dtheta = [], p_omega = []):
