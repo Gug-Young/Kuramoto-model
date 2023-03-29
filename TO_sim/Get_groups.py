@@ -47,9 +47,14 @@ def make_meanr(K,m,N,theta_init,omega,t):
 
 
 class phase_diagram():
-    def __init__(self,seed,N,m,t_end,dist='Normal') -> None:
+    def __init__(self,seed,N,m,t_end,dist='Normal',Process='F') -> None:
         self.theta_init,omega,_ = distribution[dist](N,0,1,seed=seed)
         self.omega = np.sort(omega) 
+        if Process == 'B':
+            self.theta_init = np.ones_like(self.theta_init)
+            self.dtheta_init = np.zeros_like(self.theta_init)
+        else:
+            self.dtheta_init = self.omega
         self.N = N
         self.t = np.arange(0,t_end+0.1/2,0.1)
         self.m = m
@@ -59,8 +64,9 @@ class phase_diagram():
         t = self.t
         N = self.N
         theta_init = self.theta_init
+        dtheta_init = self.dtheta_init
         omega = self.omega
-        theta, dtheta,rs = mf2(K,m=m,N=N,t_array=t,p_theta=theta_init,p_dtheta= omega,p_omega=omega)
+        theta, dtheta,rs = mf2(K,m=m,N=N,t_array=t,p_theta=theta_init,p_dtheta= dtheta_init,p_omega=omega)
         r = mean(rs)
         rstd = get_std(rs)
         groups = get_groups(dtheta,sum_time)[-sum_time:]
