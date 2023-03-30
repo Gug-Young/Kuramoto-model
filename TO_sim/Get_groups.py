@@ -13,11 +13,11 @@ distribution = {
     'Q_Lorentzian':Quantile_Lorentzian
 }
 
-def get_groups(dtheta,sum_time=500):
+def get_groups(dtheta,sum_time=1000):
     dtheta_c = np.cumsum(dtheta,axis=0)
     avg_dtheta = (dtheta_c[sum_time:]-dtheta_c[:-sum_time])/sum_time
     num_data = []
-    for data in avg_dtheta[-500:]:
+    for data in avg_dtheta[-1000:]:
         diff_dtheta = np.diff(data)
         peaks, _ = find_peaks(diff_dtheta, height=0.01)
         num_data.append(np.diff(peaks))
@@ -115,3 +115,27 @@ class phase_diagram():
             B_K_g_std = K_g_std[:len_K-1:-1]                
             return (F_K_r,B_K_r),(F_K_rstd,B_K_rstd),(F_K_g,B_K_g),(F_K_g_std,B_K_g_std)
         return K_r,K_rstd,K_g,K_g_std
+    
+    def hysteresis_check(self,m,Ks,sum_time = 500,look_time = 4000,way = 'F'):
+        t = self.t
+        N = self.N
+        theta_init = self.theta_init
+        dtheta_init = self.dtheta_init
+        omega = self.omega
+        theta_dict = {}
+        dtheta_dict = {}
+        len_K = len(Ks)
+        K_r = []
+        K_rstd = []
+        K_groups = []
+        K_g = []
+        K_g_std = []
+        len_K = len(Ks)
+        for K in Ks:
+            theta, dtheta,rs = mf2(K,m=m,N=N,t_array=t,p_theta=theta_init,p_dtheta= dtheta_init,p_omega=omega,result_time=look_time )
+            theta_init = theta[-1]
+            dtheta_init = dtheta[-1]
+            theta_dict[K] = theta
+            dtheta_dict[K] = dtheta
+            
+        return theta_dict, dtheta_dict
