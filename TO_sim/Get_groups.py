@@ -59,17 +59,59 @@ class phase_diagram():
         self.t = np.arange(0,t_end+0.1/2,0.1)
         self.m = m
 
-    def make_meanr(self,K,sum_time = 500):
+    def make_meanr(self,K,sum_time = 500,look_time = 0):
         m = self.m
         t = self.t
         N = self.N
         theta_init = self.theta_init
         dtheta_init = self.dtheta_init
         omega = self.omega
-        theta, dtheta,rs = mf2(K,m=m,N=N,t_array=t,p_theta=theta_init,p_dtheta= dtheta_init,p_omega=omega)
+        theta, dtheta,rs = mf2(K,m=m,N=N,t_array=t,p_theta=theta_init,p_dtheta= dtheta_init,p_omega=omega,result_time=look_time)
+
         r = mean(rs)
         rstd = get_std(rs)
         groups = get_groups(dtheta,sum_time)[-sum_time:]
         g = np.mean(groups,axis=0)
         g_std = np.std(groups,axis=0)
         return r,rstd,g,g_std
+    def hysteresis(self,m,Ks,sum_time = 500,look_time = 4000,way = 'F'):
+        t = self.t
+        N = self.N
+        theta_init = self.theta_init
+        dtheta_init = self.dtheta_init
+        omega = self.omega
+        K_r = []
+        K_rstd = []
+        K_groups = []
+        K_g = []
+        K_g_std = []
+        len_K = len(Ks)
+        for K in Ks:
+            theta, dtheta,rs = mf2(K,m=m,N=N,t_array=t,p_theta=theta_init,p_dtheta= dtheta_init,p_omega=omega,result_time=look_time )
+            theta_init = theta[-1]
+            dtheta_init = dtheta[-1]
+            K_r.append( mean(rs) )
+            K_rstd.append( get_std(rs) )
+            groups =  get_groups(dtheta,sum_time)[-sum_time:]
+            K_g.append( np.mean(groups,axis=0) )
+            K_g_std.append( np.std(groups,axis=0) )
+        if way=='T':
+            for K in Ks[::-1]:
+                theta, dtheta,rs = mf2(K,m=m,N=N,t_array=t,p_theta=theta_init,p_dtheta= dtheta_init,p_omega=omega,result_time=look_time )
+                theta_init = theta[-1]
+                dtheta_init = dtheta[-1]
+                K_r.append( mean(rs) )
+                K_rstd.append( get_std(rs) )
+                groups =  get_groups(dtheta,sum_time)[-sum_time:]
+                K_g.append( np.mean(groups,axis=0) )
+                K_g_std.append( np.std(groups,axis=0) )
+            F_K_r = K_r[:len_K]
+            F_K_rstd = K_rstd[:len_K]
+            F_K_g = K_g[:len_K]
+            F_K_g_std = K_g_std[:len_K]
+            B_K_r = K_r[:len_K-1:-1]                
+            B_K_rstd = K_rstd[:len_K-1:-1]                
+            B_K_g = K_g[:len_K-1:-1]                
+            B_K_g_std = K_g_std[:len_K-1:-1]                
+            return (F_K_r,B_K_r),(F_K_rstd,B_K_rstd),(F_K_g,B_K_g),(F_K_g_std,B_K_g_std)
+        return K_r,K_rstd,K_g,K_g_std
