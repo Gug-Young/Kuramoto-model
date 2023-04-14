@@ -33,7 +33,7 @@ def Sol_Kuramoto_mf(N,K,m,tspan,p_theta = [], p_dtheta = [], p_omega = [],dt=0.0
     dtheta_s = result[:,N:2*N]
     return theta_s,dtheta_s,omega,rs,t
 
-def Sol_Kuramoto_mf2(K,N,m,t_array,p_theta = [], p_dtheta = [], p_omega = [],result_time = 1000):
+def Sol_Kuramoto_mf2(K,N,m,t_array,p_theta = [], p_dtheta = [], p_omega = [],result_time = 0):
     theta, dtheta, omega  =  p_theta, p_dtheta,p_omega
     if m==0:
         function = Kuramoto_1st_mf_r

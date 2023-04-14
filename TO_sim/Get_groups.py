@@ -47,7 +47,7 @@ def make_meanr(K,m,N,theta_init,omega,t):
 
 
 class phase_diagram():
-    def __init__(self,seed,N,m,t_end,dist='Normal',Process='F') -> None:
+    def __init__(self,seed,N,m,t_end,dist='Normal',Process='F',dt=0.1) -> None:
         self.theta_init,omega,_ = distribution[dist](N,0,1,seed=seed)
         self.omega = np.sort(omega) 
         if Process == 'B':
@@ -56,8 +56,9 @@ class phase_diagram():
         else:
             self.dtheta_init = self.omega
         self.N = N
-        self.t = np.arange(0,t_end+0.1/2,0.1)
+        self.t = np.arange(0,t_end+dt/2,dt)
         self.m = m
+        self.sumtime = int(50/dt)
 
     def make_meanr(self,K,sum_time = 500,look_time = 0):
         m = self.m
