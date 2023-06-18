@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
 from TO_sim.Check_theoretical import Make_theoretical_KR
 
+
 def Time_R(Ks,t_dic,rs_dic,t_r_dic,rs_r_dic,dK,dt,t_end,N,m,mean_time=50,save=False,dist="Quantile Lorentzian",Folder_name="Review",K_draw=(1,13),r_draw=(0,0.9)):
     int_ =np.linspace(0.0,1,len(Ks))
     color = plt.cm.viridis_r(int_)
@@ -638,3 +639,28 @@ def Draw_simple_Kr(df,rdf,m,Folder_name ='Review',save=True,dK=0.2,Slicing_time=
     plt.tight_layout()
     if save:
         plt.savefig(Folder_name+f'simple ver. Hystersis m={m},dK = {dK}.png',dpi=400,transparent=True)
+        
+        
+### VER2 ####
+def Draw_avg_vel_r(t_sum,avg_r,avg_dtheta,KmN,figsize=(6.4,2)):
+    """_summary_
+    put time, average r, average phase velocity, K,m,N, figsize
+    return Draw time vs avg_r and Oscillator number vs avg. phase. velocity
+    Args:
+        t_sum (_type_): t[sum_time:]
+        avg_r (_type_): average order parameter
+        avg_dtheta (): average phase velocity
+        KmN (tuple): (K,m,N)
+        figsize (tuple, optional): figure size. Defaults to (6.4,2).
+    """
+    K,m,N = KmN
+    fig,(ax1,ax2)=plt.subplots(1,2,figsize=figsize)
+    plt.sca(ax1),plt.plot((avg_dtheta[-1]))
+    plt.xlabel('oscillator index'),plt.ylabel('avg ang. vel.')
+    plt.title(r'oscillator idx. vs avg. $\dot{\theta}$')
+    
+    plt.sca(ax2),plt.plot(t_sum,avg_r),plt.ylim(0,1)
+    plt.xlabel('time'),plt.ylabel('avg $r$')
+    plt.title(r'time vs avg. $r$')
+    plt.suptitle(f'$K$ = {K}, $m$ = {m}, $N$ = {N}',y=0.85)
+    plt.tight_layout()
