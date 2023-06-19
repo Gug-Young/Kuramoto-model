@@ -642,7 +642,7 @@ def Draw_simple_Kr(df,rdf,m,Folder_name ='Review',save=True,dK=0.2,Slicing_time=
         
         
 ### VER2 ####
-def Draw_avg_vel_r(t_sum,avg_r,avg_dtheta,KmN,figsize=(6.4,2)):
+def Draw_avg_vel_r(t_sum,avg_r,avg_dtheta,KmN,Cidx=[],figsize=(6.4,2)):
     """_summary_
     put time, average r, average phase velocity, K,m,N, figsize
     return Draw time vs avg_r and Oscillator number vs avg. phase. velocity
@@ -658,7 +658,8 @@ def Draw_avg_vel_r(t_sum,avg_r,avg_dtheta,KmN,figsize=(6.4,2)):
     plt.sca(ax1),plt.plot((avg_dtheta[-1]))
     plt.xlabel('oscillator index'),plt.ylabel('avg ang. vel.')
     plt.title(r'oscillator idx. vs avg. $\dot{\theta}$')
-    
+    for cidx in Cidx:
+        plt.plot(np.sort(cidx),avg_dtheta[-1][np.sort(cidx)],lw=3)
     plt.sca(ax2),plt.plot(t_sum,avg_r),plt.ylim(0,1)
     plt.xlabel('time'),plt.ylabel('avg $r$')
     plt.title(r'time vs avg. $r$')
