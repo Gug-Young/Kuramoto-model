@@ -24,17 +24,15 @@ def cluster_os(avg_dtheta,N,cidx=False,dt=0.1):
         arg = np.argsort(avg_dtheta[index])
         SD = avg_dtheta[index][arg]
         diff_dtheta = np.diff([SD[0],*SD,SD[-1]])
-        peaks, P  = find_peaks(diff_dtheta, height=0.02)
+        peaks, P  = find_peaks(diff_dtheta, height=0.01)
         
         # peaks = peaks[np.where((peaks<N)&(peaks>1))]
 
         try:
-            if len(peaks) == 1:
-                peaks_new = np.array([peaks[0],N])
-            else:
-                peaks_new = np.array([peaks[0],*peaks])
+            peaks_new = np.array([peaks[0],*peaks])
         except IndexError:
             peaks_new = np.array([0,N])
+
         psize = np.diff(peaks_new)
         arg_psize = np.argsort(psize)[::-1]
         sort_psize = np.sort(psize)[::-1]
@@ -60,17 +58,20 @@ def cluster_os(avg_dtheta,N,cidx=False,dt=0.1):
                 arg_array = np.c_[arg_array,arg]
         except ValueError:
             pass
-
             
 
-    Is_group = np.where((np.std(psize_array,axis=1) == 0)&(psize_array[:,-1]>10))
+    Is_group, = np.where((np.std(psize_array,axis=1) == 0)&(psize_array[:,-1]>3))
+    check_2nd = False
     mean_group_s = np.mean(c_stability_array,axis=1)
-    Is_group = np.where((mean_group_s<1e-3)&(psize_array[:,-1]>5))
-
+    Is_group2, = np.where((mean_group_s<1e-3)&(psize_array[:,-1]>3))
+    Is_group = np.intersect1d(Is_group,Is_group2)
+    if len(Is_group)==0:
+        check_2nd = True
+        mean_group_s = np.mean(c_stability_array,axis=1)
+        Is_group, = np.where((mean_group_s<1e-2)&(psize_array[:,-1]>5))
     CM_O = np.mean(mean_omega_array[Is_group],axis=1)
     sCM_O = np.sort(CM_O)
     sCM_Oidx = np.argsort(CM_O)
-
 
     CM_S = np.mean(psize_array[Is_group],axis=1)[sCM_Oidx]
     if cidx == True:
