@@ -13,7 +13,7 @@ from mpl_toolkits.axes_grid1.axes_divider import make_axes_locatable
 from tqdm.notebook import tqdm
 from scipy.signal import find_peaks
 import parmap
-df = pd.read_excel('test 230620.xlsm',index_col=[0,1])
+df = pd.read_excel('N = 500 seed = 11 test 230621.xlsm',index_col=[0,1])
 # df_Km = df.reset_index(['K','m'])
 KK = df.index.to_frame().K.unstack().to_numpy().T
 MM = df.index.to_frame().m.unstack().to_numpy().T
