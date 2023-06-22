@@ -665,3 +665,4 @@ def Draw_avg_vel_r(t_sum,avg_r,avg_dtheta,KmN,Cidx=[],figsize=(6.4,2)):
     plt.title(r'time vs avg. $r$')
     plt.suptitle(f'$K$ = {K}, $m$ = {m}, $N$ = {N}',y=0.85)
     plt.tight_layout()
+    return fig
