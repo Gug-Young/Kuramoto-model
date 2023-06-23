@@ -11,7 +11,7 @@ def Kuramoto_2nd_mf(Theta,t,omega,N,m,K):
     # print(f"Case m = {m}") 
     theta,dtheta,r,psi = Theta[:N],Theta[N:2*N],Theta[-2],Theta[-1]
     r,psi = get_order_parameter(theta,N)
-    ddtheta = (-dtheta + omega + K*r*np.sin(psi - theta))
+    ddtheta = (1/m)*(-dtheta + omega + K*r*np.sin(psi - theta))
     return np.r_[dtheta,ddtheta]
 
 def Kuramoto_1st_mf(Theta,t,omega,N,m,K):
