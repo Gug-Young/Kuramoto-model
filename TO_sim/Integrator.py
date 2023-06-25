@@ -122,3 +122,33 @@ def Error(origin, method, f, y0, t, args=()):
         Error_arr = np.fabs(origin_arr - method_arr.T)
     max_Error = np.max(Error_arr)
     return max_Error, Error_arr
+
+
+def RK4_r_sets(f, y0, t, args=(),result_time = 0):
+    n = len(t) - result_time
+    y = np.zeros((n, *y0.shape))
+    _,N,_,_,N_set = args
+    rs = np.zeros((n+result_time,N_set,1))
+    y[0] = y0
+    h = t[1] - t[0]
+    rs[0] = abs(1/N*np.sum(np.exp(1j*y0[:,:N]),axis=1)).reshape((-1,1))
+    y_ = y0
+    j = 0
+    for i in range(result_time):
+        k1,r = f(y_, t, *args)
+        k2,_ = f(y_ + k1 * h / 2.0, t + h / 2.0, *args)
+        k3,_ = f(y_ + k2 * h / 2.0, t + h / 2.0, *args)
+        k4,_ = f(y_ + k3 * h, t + h, *args)
+        y_ = y_ + (h / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4)
+        rs[j+1] = r
+        j+=1
+    y[0] = y_
+    for i in range(n - 1):
+        k1,r = f(y[i], t[i], *args)
+        k2,_ = f(y[i] + k1 * h / 2.0, t[i] + h / 2.0, *args)
+        k3,_ = f(y[i] + k2 * h / 2.0, t[i] + h / 2.0, *args)
+        k4,_ = f(y[i] + k3 * h, t[i] + h, *args)
+        y[i + 1] = y[i] + (h / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4)
+        rs[j+1] = r
+        j+=1
+    return y,rs

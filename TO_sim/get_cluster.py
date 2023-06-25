@@ -67,8 +67,11 @@ def cluster_os(avg_dtheta,N,cidx=False,dt=0.1):
     Is_group = np.intersect1d(Is_group,Is_group2)
     if len(Is_group)==0:
         check_2nd = True
+        Is_group, = np.where((np.std(psize_array,axis=1) == 0)&(psize_array[:,-1]>3))
+    if len(Is_group)==0:
+        check_3nd = True
         mean_group_s = np.mean(c_stability_array,axis=1)
-        Is_group, = np.where((mean_group_s<1e-2)&(psize_array[:,-1]>5))
+        Is_group, = np.where((mean_group_s<1e-3)&(psize_array[:,-1]>5))
     CM_O = np.mean(mean_omega_array[Is_group],axis=1)
     sCM_O = np.sort(CM_O)
     sCM_Oidx = np.argsort(CM_O)
