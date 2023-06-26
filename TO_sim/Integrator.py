@@ -127,7 +127,8 @@ def Error(origin, method, f, y0, t, args=()):
 def RK4_r_sets(f, y0, t, args=(),result_time = 0):
     n = len(t) - result_time
     y = np.zeros((n, *y0.shape))
-    _,N,_,_,N_set = args
+    N_set = len(y0)
+    _,N,_,_ = args
     rs = np.zeros((n+result_time,N_set,1))
     y[0] = y0
     h = t[1] - t[0]

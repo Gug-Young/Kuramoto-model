@@ -1,8 +1,10 @@
 import numpy as np
 from scipy.signal import find_peaks
 from TO_sim.Sol_Kuramoto import Sol_Kuramoto_mf2 as mf2
+from TO_sim.Sol_Kuramoto import Sol_Kuramoto_mf2_sets as mf2_sets
 
-def cluster_os(avg_dtheta,N,cidx=False,dt=0.1):
+
+def cluster_os(avg_dtheta,N,cidx=False,p_array=False,dt=0.1):
     def to_cluster_barg(idx,peaks_new):
         C = idx,idx+1
         arg_C = peaks_new[C[0]],peaks_new[C[1]]
@@ -18,7 +20,7 @@ def cluster_os(avg_dtheta,N,cidx=False,dt=0.1):
             return np.mean(avg_dtheta[index][x])
         except IndexError:
             return np.nan
-    iter_time = 20*int(1/dt)*5
+    iter_time = 200
     num = 0
     for index in range(-iter_time,0):
         arg = np.argsort(avg_dtheta[index])
@@ -30,6 +32,8 @@ def cluster_os(avg_dtheta,N,cidx=False,dt=0.1):
 
         try:
             peaks_new = np.array([peaks[0],*peaks])
+            if len(peaks) == 1:
+                peaks_new = np.array([peaks[0],N])
         except IndexError:
             peaks_new = np.array([0,N])
 
@@ -60,18 +64,21 @@ def cluster_os(avg_dtheta,N,cidx=False,dt=0.1):
             pass
             
 
-    Is_group, = np.where((np.std(psize_array,axis=1) == 0)&(psize_array[:,-1]>3))
-    check_2nd = False
+    Is_group, = np.where((np.std(psize_array,axis=1) == 0)&(psize_array[:,-1]>15))
+    check = 0
     mean_group_s = np.mean(c_stability_array,axis=1)
-    Is_group2, = np.where((mean_group_s<1e-3)&(psize_array[:,-1]>3))
+    Is_group2, = np.where((mean_group_s<6e-4)&(psize_array[:,-1]>15))
     Is_group = np.intersect1d(Is_group,Is_group2)
     if len(Is_group)==0:
-        check_2nd = True
-        Is_group, = np.where((np.std(psize_array,axis=1) == 0)&(psize_array[:,-1]>3))
-    if len(Is_group)==0:
-        check_3nd = True
-        mean_group_s = np.mean(c_stability_array,axis=1)
-        Is_group, = np.where((mean_group_s<1e-3)&(psize_array[:,-1]>5))
+        check = 1
+        mm = np.max(psize_array,axis=1) - np.min(psize_array,axis=1)
+        # Is_group, = np.where((np.std(psize_array,axis=1) == 0)&(psize_array[:,-1]>10))
+        Is_group, = np.where((c_stability<5e-4)&(mm <= 1)&(psize_array[:,-1]>15))
+
+    # if len(Is_group)==0:
+    #     check = 2
+    #     mean_group_s = np.mean(c_stability_array,axis=1)
+    #     Is_group, = np.where((mean_group_s<1e-3)&(psize_array[:,-1]>5))
     CM_O = np.mean(mean_omega_array[Is_group],axis=1)
     sCM_O = np.sort(CM_O)
     sCM_Oidx = np.argsort(CM_O)
@@ -79,9 +86,11 @@ def cluster_os(avg_dtheta,N,cidx=False,dt=0.1):
     CM_S = np.mean(psize_array[Is_group],axis=1)[sCM_Oidx]
     if cidx == True:
         C_idx = np.array([arg[i] for i in clusters[sCM_Oidx]])
-        return CM_S,sCM_O,C_idx
+        return CM_S,sCM_O,C_idx,check,psize_array
+    if p_array == True:
+        return CM_S,sCM_O,C_idx,check,psize_array
     else:
-        return CM_S,sCM_O
+        return CM_S,sCM_O,check
     
 def C_rsmso(K,m,N,theta_init,omega,pdtheta,t_end=5000,dt=0.1):
     t = np.arange(0,t_end,dt)
@@ -100,3 +109,29 @@ def C_rsmso(K,m,N,theta_init,omega,pdtheta,t_end=5000,dt=0.1):
     CM_S,CM_O = cluster_os(avg_dtheta=avg_dtheta,N=N,dt=dt)
     CSO = np.array([(S,O) for S,O in zip(CM_S,CM_O)],dtype=dtype)
     return r,rstd,rMM,CSO
+
+
+def C_rsmso_set(m,K_set,N,theta_init_set,omega_set,pdtheta_set,t_end=5000,dt=0.1):
+    t = np.arange(0,t_end,dt)
+    theta_set, dtheta_set,rs = mf2_sets(K_set,m=m,N=N,t_array=t,
+                                p_theta=theta_init_set,p_dtheta= pdtheta_set,p_omega=omega_set,
+                                result_time = int((t_end)-(500))*int(1/dt)-1000)
+    if m == 0:
+        dtheta_set = np.concatenate((dtheta_set[0].reshape(1,-1,N),dtheta_set),0)
+    N_set = len(theta_init_set)
+    r_duration = rs[-5000:,:]
+    r = np.mean(r_duration,axis=0).reshape(-1)
+    rstd = np.std(r_duration,axis=0).reshape(-1)
+    rMM = (np.max(r_duration,axis=0)-np.min(r_duration,axis=0)).reshape(-1)
+    sum_time = 500*int(1/dt)
+    dtheta_c = np.cumsum(dtheta_set,axis=0)
+    avg_dtheta_set = (dtheta_c[sum_time:]-dtheta_c[:-sum_time])/sum_time
+    dtype = [('cluster size', int), ('cluster mean phase velocity', float)]
+    CSO_set = []
+    check_set = [] 
+    for i in range(N_set):
+        CM_S,CM_O,check = cluster_os(avg_dtheta=avg_dtheta_set[:,i],N=N,dt=dt)
+        CSO = np.array([(S,O) for S,O in zip(CM_S,CM_O)],dtype=dtype)
+        CSO_set.append(CSO)
+        check_set.append(check)
+    return r,rstd,rMM,CSO_set,check_set
