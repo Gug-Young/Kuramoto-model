@@ -115,7 +115,7 @@ def C_rsmso_set(m,K_set,N,theta_init_set,omega_set,pdtheta_set,t_end=5000,dt=0.1
     t = np.arange(0,t_end,dt)
     theta_set, dtheta_set,rs = mf2_sets(K_set,m=m,N=N,t_array=t,
                                 p_theta=theta_init_set,p_dtheta= pdtheta_set,p_omega=omega_set,
-                                result_time = int((t_end)-(500))*int(1/dt)-1000)
+                                result_time = int((t_end)-(200))*int(1/dt)-1000)
     if m == 0:
         dtheta_set = np.concatenate((dtheta_set[0].reshape(1,-1,N),dtheta_set),0)
     N_set = len(theta_init_set)
@@ -123,7 +123,7 @@ def C_rsmso_set(m,K_set,N,theta_init_set,omega_set,pdtheta_set,t_end=5000,dt=0.1
     r = np.mean(r_duration,axis=0).reshape(-1)
     rstd = np.std(r_duration,axis=0).reshape(-1)
     rMM = (np.max(r_duration,axis=0)-np.min(r_duration,axis=0)).reshape(-1)
-    sum_time = 500*int(1/dt)
+    sum_time = 200*int(1/dt)
     dtheta_c = np.cumsum(dtheta_set,axis=0)
     avg_dtheta_set = (dtheta_c[sum_time:]-dtheta_c[:-sum_time])/sum_time
     dtype = [('cluster size', int), ('cluster mean phase velocity', float)]
