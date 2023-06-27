@@ -127,7 +127,7 @@ def C_rsmso_set(m,K_set,N,theta_init_set,omega_set,pdtheta_set,t_end=5000,dt=0.1
     rMM = (np.max(r_duration,axis=0)-np.min(r_duration,axis=0)).reshape(-1)
 
     sum_time = 200*int(1/dt)
-    if dt == 0.01:
+    if dt <= 0.01:
         sum_time = 2000
     dtheta_c = np.cumsum(dtheta_set,axis=0)
     avg_dtheta_set = (dtheta_c[sum_time:]-dtheta_c[:-sum_time])/sum_time
