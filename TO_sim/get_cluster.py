@@ -117,8 +117,6 @@ def C_rsmso_set(m,K_set,N,theta_init_set,omega_set,pdtheta_set,t_end=5000,dt=0.1
     _, dtheta_set,rs = mf2_sets(K_set,m=m,N=N,t_array=t,
                                 p_theta=theta_init_set,p_dtheta= pdtheta_set,p_omega=omega_set,
                                 result_time = int((t_end)-(200))*int(1/dt)-(150)*int(1/dt))
-    if dt == 0.01:
-        dtheta_set = dtheta_set[::10]
 
     if m == 0:
         dtheta_set = np.concatenate((dtheta_set[0].reshape(1,-1,N),dtheta_set),0)

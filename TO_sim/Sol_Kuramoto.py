@@ -308,6 +308,7 @@ def Sol_Kuramoto_mf2_sets(K_set,N,m,t_array,p_theta = [], p_dtheta = [], p_omega
         function = Kuramoto_1st_mf_sets_r
     else:
         function = Kuramoto_2nd_mf_sets_r
+    dt = t_array[1] - t_array[0]
     result,rs = RK4_r_sets(function,np.c_[theta,dtheta],t_array,args=(omega,N,m,K_set),result_time=result_time)
     theta_s = result[:,:,:N]
     dtheta_s = result[:,:,N:2*N]
