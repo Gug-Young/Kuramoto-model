@@ -72,8 +72,10 @@ def cluster_os(avg_dtheta,N,cidx=False,p_array=False,dt=0.1):
     if len(Is_group)==0:
         check = 1
         mm = np.max(psize_array,axis=1) - np.min(psize_array,axis=1)
-        # Is_group, = np.where((np.std(psize_array,axis=1) == 0)&(psize_array[:,-1]>10))
-        Is_group, = np.where((c_stability<5e-4)&(mm <= 1)&(psize_array[:,-1]>15))
+        mean_group_s = np.mean(c_stability_array,axis=1)
+        Is_group, = np.where((mean_group_s<5e-4)&(psize_array[:,-1]>15))
+        Is_group2, = np.where((mm <= 1)&(psize_array[:,-1]>15))
+        Is_group = np.intersect1d(Is_group,Is_group2)
 
     # if len(Is_group)==0:
     #     check = 2
