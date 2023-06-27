@@ -135,7 +135,7 @@ def RK4_r_sets(f, y0, t, args=(),result_time = 0):
     y = np.zeros((n_save, *y0.shape))
     N_set = len(y0)
     _,N,_,_ = args
-    rs = np.zeros((n+ result_time,N_set,1))
+    rs = np.zeros((n+result_time,N_set,1))
     y[0] = y0
     rs[0] = abs(1/N*np.sum(np.exp(1j*y0[:,:N]),axis=1)).reshape((-1,1))
     y_ = y0
