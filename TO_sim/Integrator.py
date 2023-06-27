@@ -128,7 +128,7 @@ def RK4_r_sets(f, y0, t, args=(),result_time = 0):
     n = len(t) - result_time
     h = t[1] - t[0]
     if h <= 0.01:
-        n_save = n//10 
+        n_save = n//10 + 1
     else:
         n_save = n
     
@@ -150,15 +150,26 @@ def RK4_r_sets(f, y0, t, args=(),result_time = 0):
         j+=1
     y[0] = y_
     num = 0
-    for i in range(n - 1):
-        k1,r = f(y_, t[i], *args)
-        k2,_ = f(y_ + k1 * h / 2.0, t[i] + h / 2.0, *args)
-        k3,_ = f(y_ + k2 * h / 2.0, t[i] + h / 2.0, *args)
-        k4,_ = f(y_ + k3 * h, t[i] + h, *args)
-        y_ = y_ + (h / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4)
-        rs[j+1] = r
-        j+=1
-        if i%10 == 0:
-            num+= 1
-            y[num] = y_
+    if h <= 0.01:
+    
+        for i in range(n - 1):
+            k1,r = f(y_, t[i], *args)
+            k2,_ = f(y_ + k1 * h / 2.0, t[i] + h / 2.0, *args)
+            k3,_ = f(y_ + k2 * h / 2.0, t[i] + h / 2.0, *args)
+            k4,_ = f(y_ + k3 * h, t[i] + h, *args)
+            y_ = y_ + (h / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4)
+            rs[j+1] = r
+            j+=1
+            if i%10 == 0:
+                num+= 1
+                y[num] = y_
+    else:
+        for i in range(n - 1):
+            k1,r = f(y[i], t[i], *args)
+            k2,_ = f(y[i] + k1 * h / 2.0, t[i] + h / 2.0, *args)
+            k3,_ = f(y[i] + k2 * h / 2.0, t[i] + h / 2.0, *args)
+            k4,_ = f(y[i] + k3 * h, t[i] + h, *args)
+            y[i + 1] = y[i] + (h / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4)
+            rs[j+1] = r
+            j+=1
     return y,rs
