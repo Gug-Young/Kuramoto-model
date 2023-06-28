@@ -15,6 +15,8 @@ from scipy.signal import find_peaks
 import parmap
 # df = pd.read_excel('N = 500 seed = 10 test 230627.xlsm',index_col=[0,1])
 df = pd.read_excel('N = 500 seed = 10 test 230627 with initial phase vel.xlsm',index_col=[0,1])
+# df = pd.read_excel('N = 500 seed = 10 test 230621.xlsm',index_col=[0,1])
+
 # df_Km = df.reset_index(['K','m'])
 KK = df.index.to_frame().K.unstack().to_numpy().T
 MM = df.index.to_frame().m.unstack().to_numpy().T
