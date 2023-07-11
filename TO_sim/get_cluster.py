@@ -258,21 +258,16 @@ def cluster_os_new2(AVG,height=1e-2,c_std = 3,check=2e-4,c_size=3,N=500,omega=[]
     sort_avg = np.sort(AVG,axis=1)
     sort_argavg = np.argsort(AVG,axis=1)
     diff_avg = np.diff(np.c_[sort_avg[:,0],sort_avg],axis=1)
+    min_len = 10
     for A,c_start,c_end in [peaks_(x,height,N=N) for x in diff_avg]:
-        # C_size.append(A)
-        # C_start.append(c_start)
-        # C_end.append(c_end)
-        if num == 0:
-            C_size.append(A)
-            num+=1
-            C_size = A
-            C_start = c_start
-            C_end = c_end
-        else:
-            C_size = np.c_[C_size,A]
-            C_start = np.c_[C_start,c_start]
-            C_end = np.c_[C_end,c_end]
-    Is_group, = np.where((np.std(C_start,axis=1)<c_std)&(A>c_size))
+        min_len = min(min_len,len(A))
+        C_size.append(A)
+        C_start.append(c_start)
+        C_end.append(c_end)
+    C_size = np.array([c_[:min_len] for c_ in C_size]).T
+    C_start = np.array([c_[:min_len] for c_ in C_start]).T
+    C_end = np.array([c_[:min_len] for c_ in C_end]).T
+    Is_group, = np.where((np.std(C_start,axis=1)<c_std)&(A[:min_len]>c_size))
     arg = sort_argavg[-1]
 
     cluster = np.array([np.arange(c_i,c_j,1) for c_i,c_j in zip(C_start[Is_group,-1],C_end[Is_group,-1])])
