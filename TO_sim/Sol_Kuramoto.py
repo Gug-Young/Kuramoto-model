@@ -316,3 +316,26 @@ def Sol_Kuramoto_mf2_sets(K_set,N,m,t_array,p_theta = [], p_dtheta = [], p_omega
         dt = t_array[1]-t_array[0]
         dtheta_s = np.diff(theta_s/dt,axis=0)
     return theta_s,dtheta_s,rs
+
+
+def Sol_Kuramoto_mf2_sets_not0(m_set,N,K,t_array,p_theta = [], p_dtheta = [], p_omega = [],result_time = 0):
+    theta, dtheta, omega  =  p_theta, p_dtheta,p_omega
+    function = Kuramoto_2nd_mf_sets_r
+    dt = t_array[1] - t_array[0]
+    result,rs = RK4_r_sets(function,np.c_[theta,dtheta],t_array,args=(omega,N,m_set,K),result_time=result_time)
+    theta_s = result[:,:,:N]
+    dtheta_s = result[:,:,N:2*N]
+    return theta_s,dtheta_s,rs
+
+
+def Sol_Kuramoto_mf2_sets_0(m,N,K_set,t_array,p_theta = [], p_dtheta = [], p_omega = [],result_time = 0):
+    theta, dtheta, omega  =  p_theta, p_dtheta,p_omega
+    function = Kuramoto_1st_mf_sets_r
+    dt = t_array[1] - t_array[0]
+    result,rs = RK4_r_sets(function,np.c_[theta,dtheta],t_array,args=(omega,N,m,K_set),result_time=result_time)
+    theta_s = result[:,:,:N]
+    dtheta_s = result[:,:,N:2*N]
+    if m == 0:
+        dt = t_array[1]-t_array[0]
+        dtheta_s = np.diff(theta_s/dt,axis=0)
+    return theta_s,dtheta_s,rs

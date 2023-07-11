@@ -2,7 +2,8 @@ import numpy as np
 from scipy.signal import find_peaks
 from TO_sim.Sol_Kuramoto import Sol_Kuramoto_mf2 as mf2
 from TO_sim.Sol_Kuramoto import Sol_Kuramoto_mf2_sets as mf2_sets
-
+import warnings
+warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning) 
 
 # def cluster_os(avg_dtheta,N,cidx=False,p_array=False,dt=0.1):
 #     def to_cluster_barg(idx,peaks_new):

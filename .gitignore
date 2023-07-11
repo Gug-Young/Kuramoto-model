@@ -2,6 +2,7 @@
 *.pkl
 *.mp4
 *.pyc
+*TLO.xlsm
 잡다한 연습/*
 TO_sim/__Private__.py
 TO_sim/Private.py
