@@ -69,11 +69,11 @@ def make_new_df(K_start,m_start,N = 500):
         df_Km[f'c{i} list'] =df_Km[f'c{i} list'].astype(object)
     return df_Km,theta_col,dtheta_col
 
-def TLO(m,theta_init,omega,Ks,N,t_end=500,dt = 0.1):
+def TLO(m,theta_init,dtheta_init,omega,Ks,N,t_end=500,dt = 0.1):
     df_Km,theta_col,dtheta_col = make_new_df(0,m,N = N)
     t = np.arange(0,t_end,dt)
     K = Ks[0]
-    theta, dtheta,rs = mf2(K,N=N,m=m,t_array=t,p_theta=theta_init,p_dtheta= 0*omega,p_omega=omega,result_time = int((t_end)-(350))*int(1/dt))
+    theta, dtheta,rs = mf2(K,N=N,m=m,t_array=t,p_theta=theta_init,p_dtheta= dtheta_init,p_omega=omega,result_time = int((t_end)-(350))*int(1/dt))
     if m == 0:
         dtheta = np.c_[dtheta[0],dtheta.T].T
     last_theta,last_dtheta = hysterisis(df_Km,(theta, dtheta,rs),theta_col,dtheta_col,K,m,N,omega)
@@ -102,7 +102,7 @@ def hysterisis_col(df_Km,sets,theta_col,dtheta_col,K,m_set,N,omega):
     dtype = [('cluster size', int), ('cluster mean phase velocity', float)]
     dtype2 = [('cluster size', int), ('cluster mean natural frequency', float)]
 
-    c_threshold = np.where(mean_rs<0.05,1e-5,1e-4)
+    c_threshold = np.where(mean_rs<0.05,1e-5,3e-4)
     last_theta = theta_set[-1]
     last_dtheta = dtheta_set[-1]
     for i,m in enumerate(m_set.reshape(-1)):

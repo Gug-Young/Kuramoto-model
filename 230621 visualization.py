@@ -15,7 +15,7 @@ from scipy.signal import find_peaks
 import parmap
 # df = pd.read_excel('N = 500 seed = 10 test 230627.xlsm',index_col=[0,1])
 # df = pd.read_excel('N = 500 seed = 10 test dt = 0.01 230708 ver3.xlsm',index_col=[0,1])
-df = pd.read_excel('N = 500 seed = 10 test dt = 0.1 TLO.xlsm',index_col=[0,1])
+df = pd.read_excel('N = 500 seed = 10 dt = 0.1 win 3.5-0 TLO.xlsm',index_col=[0,1])
 
 # df = pd.read_excel('N = 500 seed = 10 test 230627 with initial phase vel.xlsm',index_col=[0,1])
 # df = pd.read_excel('N = 500 seed = 10 test 230621.xlsm',index_col=[0,1])
