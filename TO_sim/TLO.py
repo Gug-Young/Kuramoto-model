@@ -3,12 +3,14 @@ from TO_sim.Sol_Kuramoto import Sol_Kuramoto_mf2_sets_not0 as mf2_sets_TLO
 import numpy as np
 import pandas as pd
 from TO_sim.get_cluster import cluster_os_new2
-
+max_c = 3e-4
 
 def hysterisis(df_Km,sets,theta_col,dtheta_col,K,m,N,omega):
     theta,dtheta,rs = sets
     r_duration = rs[-5000:]
     r = np.mean(r_duration,axis=0)
+    rmin = np.min(r_duration,axis=0)
+    rmax = np.max(r_duration,axis=0)
     rstd = np.std(r_duration,axis=0)
     rMM = (np.max(r_duration,axis=0)-np.min(r_duration,axis=0))
 
@@ -16,7 +18,7 @@ def hysterisis(df_Km,sets,theta_col,dtheta_col,K,m,N,omega):
     dtheta_c = np.cumsum(dtheta,axis=0)
     avg_dtheta = (dtheta_c[sum_time:]-dtheta_c[:-sum_time])/sum_time
 
-    c_threshold = np.where(r<0.1,1e-5,1e-4)
+    c_threshold = np.where(r<0.05,1e-5,max_c)
     CS,CMP,cluster,omega_s,omega_e,CMO,Is_group,C_s,C_e = cluster_os_new2(AVG=avg_dtheta,check=c_threshold,c_size=5,N=N,omega=omega)
     dtype = [('cluster size', int), ('cluster mean phase velocity', float)]
     dtype2 = [('cluster size', int), ('cluster mean natural frequency', float)]
@@ -26,6 +28,8 @@ def hysterisis(df_Km,sets,theta_col,dtheta_col,K,m,N,omega):
     last_theta = theta[-1]
     last_dtheta = dtheta[-1]
     df_Km.loc[(K,m),"r"] = r
+    df_Km.loc[(K,m),"rmin"] = rmin
+    df_Km.loc[(K,m),"rmax"] = rmax
     df_Km.loc[(K,m),"rstd"] = rstd
     df_Km.loc[(K,m),"rMM"] = rMM
     df_Km.loc[(K,m),'error'] = np.nan
@@ -34,12 +38,13 @@ def hysterisis(df_Km,sets,theta_col,dtheta_col,K,m,N,omega):
         df_Km.loc[(K,m),f'c{i} phase vel'] = CSMP['cluster mean phase velocity'][i]
         df_Km.loc[(K,m),f'c{i} omega'] = CSMO['cluster mean natural frequency'][i]
         df_Km.loc[(K,m),f'c{i} list'] = ' '.join(map(str,cluster[i]))
+    df_Km.loc[(K,m),'avg_dtheta'] = ' '.join(map(str,avg_dtheta[-1]))
     df_Km.loc[(K,m),theta_col] = last_theta
     df_Km.loc[(K,m),dtheta_col] = last_dtheta
     return (last_theta,last_dtheta)
 
 def make_new_df(K_start,m_start,N = 500):
-    cols ={'r':[0],'rstd':[0],'rMM':[0],'error':[0]}
+    cols ={'r':[0],'rmin':[0],'rmax':[0],'rstd':[0],'rMM':[0],'error':[0]}
     theta_col = []
     dtheta_col = []
     for i in range(10):
@@ -60,13 +65,14 @@ def make_new_df(K_start,m_start,N = 500):
         s = 'dtheta'+f'{i}'.zfill(3)
         dtheta_col.append(s)
         cols[s]= np.nan
-
+    cols['avg_dtheta']= np.nan
     cols['K'] = K_start
     cols['m'] = m_start
     df = pd.DataFrame(columns=cols.keys())
     df_Km = df.set_index(['K','m'])
     for i in range(10):
         df_Km[f'c{i} list'] =df_Km[f'c{i} list'].astype(object)
+    df_Km['avg_dtheta'] = df_Km['avg_dtheta'].astype(object)
     return df_Km,theta_col,dtheta_col
 
 def TLO(m,theta_init,dtheta_init,omega,Ks,N,t_end=500,dt = 0.1):
@@ -90,7 +96,9 @@ def hysterisis_col(df_Km,sets,theta_col,dtheta_col,K,m_set,N,omega):
     r_duration = rs[-5000:,:]
     r = np.mean(r_duration,axis=0)
     rstd = np.std(r_duration,axis=0)
-    rMM = (np.max(r_duration,axis=0)-np.min(r_duration,axis=0))
+    rmax =np.max(r_duration,axis=0)
+    rmin =np.min(r_duration,axis=0)
+    rMM = (rmax-rmin)
 
     sum_time = 1500
     dtheta_c = np.cumsum(dtheta_set,axis=0)
@@ -102,12 +110,14 @@ def hysterisis_col(df_Km,sets,theta_col,dtheta_col,K,m_set,N,omega):
     dtype = [('cluster size', int), ('cluster mean phase velocity', float)]
     dtype2 = [('cluster size', int), ('cluster mean natural frequency', float)]
 
-    c_threshold = np.where(mean_rs<0.05,1e-5,3e-4)
+    c_threshold = np.where(mean_rs<0.05,1e-5,max_c)
     last_theta = theta_set[-1]
     last_dtheta = dtheta_set[-1]
     for i,m in enumerate(m_set.reshape(-1)):
             AVG = avg_dtheta_set[-1500:,i]
             df_Km.loc[(K,m),"r"] = r[i]
+            df_Km.loc[(K,m),"rmin"] = rmin[i]
+            df_Km.loc[(K,m),"rmax"] = rmax[i]
             df_Km.loc[(K,m),"rstd"] = rstd[i]
             df_Km.loc[(K,m),"rMM"] = rMM[i]
             c_check = c_threshold[i]
@@ -121,6 +131,7 @@ def hysterisis_col(df_Km,sets,theta_col,dtheta_col,K,m_set,N,omega):
                     df_Km.loc[(K,m),f'c{i} list'] = ' '.join(map(str,cluster[i]))
             df_Km.loc[(K,m),theta_col] = last_theta[i]
             df_Km.loc[(K,m),dtheta_col] = last_dtheta[i]
+            df_Km.loc[(K,m),'avg_dtheta'] = ' '.join(map(str,AVG[-1]))
     return (last_theta,last_dtheta)
 
 def TLO_col(m_set,theta_init_set,omega_set,Ks,N,t_end=500,dt = 0.1):

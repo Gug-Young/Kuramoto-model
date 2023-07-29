@@ -75,9 +75,7 @@ ax.contour(KK, MM, df['c0'], zdir='y', offset=40, cmap='coolwarm')
 #        xlabel='X', ylabel='Y', zlabel='Z')
 
 # ax.scatter(Ks,ms,sm)
-ax.set_xlabel('$K$ : coupling constant')
-ax.set_ylabel('$m$ : inertia')
-ax.set_zlabel('cluster phase velocity')
+
 # plt.zlim(-0.)
 # plt.scatter(Ks,ms,Ss,Ss)
 plt.show()
