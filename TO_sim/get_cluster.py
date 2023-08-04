@@ -287,7 +287,9 @@ def cluster_os_new2(AVG,height=1e-2,c_std = 3,check=2e-4,c_size=3,N=500,omega=[]
     omega_s = [omega[c_s] for c_s in C_s]
     omega_e = [omega[c_e-1] for c_e in C_e]
     CMP = np.array([np.mean(sort_avg[0,c_]) for c_ in cluster])
+
     CS = np.array([len(c_) for c_ in cluster])
+    cluster = np.array([sort_argavg[-1,c_] for c_ in cluster])
     return CS,CMP,cluster,omega_s,omega_e,CMO,Is_group,C_s,C_e
 
 def C_rsmso_set_new(m,K_set,N,theta_init_set,omega_set,pdtheta_set,t_end=5000,dt=0.1):
