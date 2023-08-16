@@ -160,14 +160,25 @@ def Make_empirical_KR_0(m,O_0,dist='normal'):
         g= g_n
     else:
         g= g_c
+    # def r_0(X,m,g,O_0):
+    #     O_d = min(O_0,X)
+    #     theta_0 = np.arcsin(O_d/X)
+    #     integrand_l = lambda x:np.cos(x)**2*g(X*np.sin(x))
+    #     integrand_d = lambda x:(1/x**3)*g(x)
+    #     I_l,err_l = quad(integrand_l,-theta_0,theta_0,limit=200) #lock
+    #     I_d,err_d = quad(integrand_d,O_d,np.inf,limit=200) #drift
+    #     r0 = X*I_l - X/(m**2)*I_d
+    #     return r0
     def r_0(X,m,g,O_0):
         O_d = min(O_0,X)
         theta_0 = np.arcsin(O_d/X)
         integrand_l = lambda x:np.cos(x)**2*g(X*np.sin(x))
-        integrand_d = lambda x:(1/x**3)*g(x)
-        I_l,err_l = quad(integrand_l,-theta_0,theta_0,limit=200) #lock
+        integrand_l = lambda x:g(x)*(1-x**2/X**2)**0.5
+
+        integrand_d = lambda x,m=m:(X*m/(2*(1+(x*m)**2)))*g(x)
+        I_l,err_l = quad(integrand_l,0,O_d,limit=200) #lock
         I_d,err_d = quad(integrand_d,O_d,np.inf,limit=200) #drift
-        r0 = X*I_l - X/(m**2)*I_d
+        r0 = 2*I_l - 2*I_d
         return r0
     r_0 = np.vectorize(r_0)
     
