@@ -297,7 +297,7 @@ def C_rsmso_set_new(m,K_set,N,theta_init_set,omega_set,pdtheta_set,t_end=5000,dt
     omega = omega_set[0]
     theta_set, dtheta_set,rs = mf2_sets(K_set,N=N,m=m,t_array=t,
                                     p_theta=theta_init_set,p_dtheta= pdtheta_set,p_omega=omega_set,
-                                    result_time = int((t_end)-(200))*int(1/dt)-(150)*int(1/dt))
+                                    result_time =  int((t_end)-(350))*int(1/dt))
     if m == 0:
         dtheta_set = np.concatenate((dtheta_set[0].reshape(1,-1,N),dtheta_set),0)
     sum_time = 1500
@@ -317,7 +317,7 @@ def C_rsmso_set_new(m,K_set,N,theta_init_set,omega_set,pdtheta_set,t_end=5000,dt
     cluster_set = []
     C_s_set = []
     C_e_set = []
-    c_threshold = np.where(mean_rs<0.05,1e-5,3e-4)
+    c_threshold = np.where(mean_rs<0.1,1e-5,3e-4)
     error_set = []
     C_omega_s = []
     C_omega_e = []
