@@ -1,5 +1,5 @@
 import numpy as np
-
+import numba
 
 def Euler(f, y0, t, args=()):
     n = len(t)
@@ -44,7 +44,7 @@ def RK4_r(f, y0, t, args=(),result_time = 0):
     y[0] = y0
     _,N,_,_ = args
     h = t[1] - t[0]
-    rs[0] = abs(1/N*np.sum(np.exp(1j*y0[:N])))
+    rs[0] = np.abs(1/N*np.sum(np.exp(1j*y0[:N])))
     y_ = y0
     j = 0
     for i in range(result_time):
@@ -123,7 +123,7 @@ def Error(origin, method, f, y0, t, args=()):
     max_Error = np.max(Error_arr)
     return max_Error, Error_arr
 
-
+@numba.jit(nopython=True)
 def RK4_r_sets(f, y0, t, args=(),result_time = 0):
     n = len(t) - result_time
     h = t[1] - t[0]
@@ -137,7 +137,7 @@ def RK4_r_sets(f, y0, t, args=(),result_time = 0):
     _,N,_,_ = args
     rs = np.zeros((n+result_time,N_set,1))
     y[0] = y0
-    rs[0] = abs(1/N*np.sum(np.exp(1j*y0[:,:N]),axis=1)).reshape((-1,1))
+    rs[0] = np.abs(1/N*np.sum(np.exp(1j*y0[:,:N]),axis=1)).reshape((-1,1))
     y_ = y0
     j = 0
     for i in range(result_time):

@@ -2,6 +2,7 @@ import numpy as np
 from TO_sim.Integrator import RK4,RK4_sampling,RK4_r, RK4_r_sets
 from TO_sim.Kuramoto_model import *
 from TO_sim.gen_Distribution import *
+import numba
 
 def Make_order_parameter(theta_s,N):
     rs = np.abs(np.sum(np.exp(1j*theta_s.T),axis=0))/N
@@ -63,6 +64,7 @@ def Sol_Kuramoto_mK(mK,N,t_array,p_theta = [], p_dtheta = [], p_omega = []):
         dtheta_s = np.diff(theta_s/dt,axis=0)
     return theta_s,dtheta_s,rs
 
+@numba.jit(nopython=True)
 def Sol_Kuramoto_r(K,N,m,t_array,p_theta = [], p_dtheta = [], p_omega = []):
     """
     멀티프로세스를 효율적으로 돌리기 위한 시스템 경량화
@@ -327,15 +329,20 @@ def Sol_Kuramoto_mf2_sets_not0(m_set,N,K,t_array,p_theta = [], p_dtheta = [], p_
     dtheta_s = result[:,:,N:2*N]
     return theta_s,dtheta_s,rs
 
-
+@numba.jit(nopython=True)
 def Sol_Kuramoto_mf2_sets_0(m,N,K_set,t_array,p_theta = [], p_dtheta = [], p_omega = [],result_time = 0):
     theta, dtheta, omega  =  p_theta, p_dtheta,p_omega
     function = Kuramoto_1st_mf_sets_r
     dt = t_array[1] - t_array[0]
-    result,rs = RK4_r_sets(function,np.c_[theta,dtheta],t_array,args=(omega,N,m,K_set),result_time=result_time)
+    Theta = np.zeros((theta.shape[0],2*N))
+    Theta[:,:N] =  theta
+    Theta[:,N:] =  dtheta
+    
+    result,rs = RK4_r_sets(function,Theta,t_array,args=(omega,N,m,K_set),result_time=result_time)
     theta_s = result[:,:,:N]
     dtheta_s = result[:,:,N:2*N]
     if m == 0:
         dt = t_array[1]-t_array[0]
-        dtheta_s = np.diff(theta_s/dt,axis=0)
+        dtheta_s[1:,...] = theta_s[1:,...] - theta_s[:-1,...]
+        dtheta_s = dtheta_s/dt
     return theta_s,dtheta_s,rs
