@@ -123,7 +123,7 @@ def Error(origin, method, f, y0, t, args=()):
     max_Error = np.max(Error_arr)
     return max_Error, Error_arr
 
-@numba.jit(nopython=True)
+# @numba.jit(nopython=True)
 def RK4_r_sets(f, y0, t, args=(),result_time = 0):
     n = len(t) - result_time
     h = t[1] - t[0]
