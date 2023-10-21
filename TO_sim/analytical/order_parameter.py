@@ -49,16 +49,16 @@ def r_lock1(X,m,g):
 
 def r_drift1(X,m,g):
     O_p = (4/np.pi)*np.sqrt(X/m)
-    integrand_drift = lambda x:1/(x**3)*g(x)
+    integrand_drift = lambda x:1/(x**2)*g(x)
     I_d,err = quad(integrand_drift,O_p,np.inf,limit=200)
-    return -X/(m**2)*I_d
+    return -X/(m)*I_d
 def r_1(X,m,g):
     integrand_lock = lambda x:np.cos(x)**2*g(X*np.sin(x))
     O_p = (4/np.pi)*np.sqrt(X/m)
     A = O_p/X
-    integrand_drift = lambda x:1/(x**3)*g(x)
+    integrand_drift = lambda x:1/(x**2)*g(x)
     I_d,err = quad(integrand_drift,O_p,np.inf,limit=200)
-    r_d = -X/(m**2)*I_d
+    r_d = -X/(m)*I_d
 
     if abs(A)<=1:
         theta_p = np.arcsin(A)
@@ -75,27 +75,27 @@ def r_lock2(X,m,g):
 
 def r_drift2(X,m,g):
     O_d = X
-    integrand_drift = lambda x:1/(x**3)*g(x)
+    integrand_drift = lambda x:1/(x**2)*g(x)
     I_d,err = quad(integrand_drift,O_d,np.inf,limit=200)
-    return -X/(m**2)*I_d
+    return -X/(m)*I_d
 
 def r_2(X,m,g):
     O_d = X
     integrand_lock = lambda x:np.cos(x)**2*g(X*np.sin(x))
-    integrand_drift = lambda x:1/(x**3)*g(x)
+    integrand_drift = lambda x:1/(x**2)*g(x)
     I_l,err = quad(integrand_lock,-np.pi/2,np.pi/2,limit=200)
     I_d,err = quad(integrand_drift,O_d,np.inf,limit=200)
-    r = X*I_l -X/(m**2)*I_d
+    r = X*I_l -X/(m)*I_d
     return r
 
 def r_0(X,m,g,O_0):
         O_d = min(O_0,X)
         theta_0 = np.arcsin(O_d/X)
         integrand_l = lambda x:np.cos(x)**2*g(X*np.sin(x))
-        integrand_d = lambda x:(1/x**3)*g(x)
+        integrand_d = lambda x:(1/x**2)*g(x)
         I_l,err_l = quad(integrand_l,-theta_0,theta_0,limit=200) #lock
         I_d,err_d = quad(integrand_d,O_d,np.inf,limit=200) #drift
-        r0 = X*I_l - X/(m**2)*I_d
+        r0 = X*I_l - X/(m)*I_d
         return r0
 
 r_1 = np.vectorize(r_1)
@@ -164,10 +164,10 @@ def Make_empirical_KR_0(m,O_0,dist='normal'):
         O_d = min(O_0,X)
         theta_0 = np.arcsin(O_d/X)
         integrand_l = lambda x:np.cos(x)**2*g(X*np.sin(x))
-        integrand_d = lambda x:(1/x**3)*g(x)
+        integrand_d = lambda x:(1/x**2)*g(x)
         I_l,err_l = quad(integrand_l,-theta_0,theta_0,limit=200) #lock
         I_d,err_d = quad(integrand_d,O_d,np.inf,limit=200) #drift
-        r0 = X*I_l - X/(m**2)*I_d
+        r0 = X*I_l - X/(m)*I_d
         return r0
     # def r_0(X,m,g,O_0):
     #     O_d = min(O_0,X)
