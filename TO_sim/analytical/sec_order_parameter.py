@@ -220,11 +220,16 @@ def r_drift2(r,r_m,O_r,O_pm,K,m,g=g_sec):
     integrand_drift = lambda x:1/(2*x**2)*g(x+shift(0),O_r,O_pm)
     I_d,err = quad(integrand_drift,O_p,np.inf,epsabs=1e-10,limit=200)
     I_dm,err = quad(integrand_drift,-np.inf,-O_p,epsabs=1e-10,limit=200)
-    return -X/(m)*(I_d+I_dm)
+    return -X/(2*m)*(I_d+I_dm)
 
 def r_sec(r,r_m,O_r,O_pm,K,m,g=g_sec):
     rl = r_lock2(r,r_m,O_r,O_pm,K,m,g=g_sec)
     rd = r_drift2(r,r_m,O_r,O_pm,K,m,g=g_sec)
+    return rl+rd - r
+
+def r_sec_New(r,r_m,O_r,O_pm,K,m,g=g_sec):
+    rl = r_lock2(r,r_m,O_r,O_pm,K,m,g=g_sec)
+    rd = 0 #r_drift2(r,r_m,O_r,O_pm,K,m,g=g_sec)
     return rl+rd - r
 
 def F_lock2(r,r_m,O_r,O_pm,K,m,g=g_sec):
@@ -251,7 +256,7 @@ def F_drift2(r,r_m,O_r,O_pm,K,m,g=g_sec):
     O_p = (4/np.pi)*np.sqrt(X/m)
     integrand_drift = lambda x:1/(2*x**2)*g(x+shift(0),O_r,O_pm)
     I_d,err = quad(integrand_drift,O_p,5,limit=200)
-    return -1/(m)*I_d
+    return -1/(2*m)*I_d
 
 def F_2f(r,r_m,O_r,O_pm,K,m,g=g_sec):
     X = K*r
@@ -279,6 +284,15 @@ def get_F_sec(r,K,m,r_0):
     F_2 = F_2f(r,r_0,O_r,O_pm,K,m,g_sec)
     return F_2
 F_sec = np.vectorize(get_F_sec)
+
+
+def get_F_sec_NEW(r,K,m,r_0):
+    O_pm = norm.ppf(r_0/2+0.5)
+    O_r = quad(norm.ppf,r_0/2+0.5,1)[0]/(0.5-r_0/2)
+    F_2 = F_lock2(r,r_0,O_r,O_pm,K,m,g_sec)
+    # F_2 = F_2f(r,r_0,O_r,O_pm,K,m,g_sec)
+    return F_2
+F_sec_N = np.vectorize(get_F_sec_NEW)
 
 def get_r_sec(K,m,r_0,samples=200):
     rs_u = np.nan
@@ -333,9 +347,63 @@ def get_r_sec(K,m,r_0,samples=200):
             rs_u_l = r_lock2(rs_u,r_0,O_r,O_pm,K,m,g=g_sec)
         return rs_d,rs_u,rs_u_l,rs_u_d
 
+def get_r_sec_N(K,m,r_0,samples=200):
+    rs_u = np.nan
+    rs_d = np.nan
+
+    rs_u_l = np.nan
+    rs_u_d = np.nan
+    if np.isnan(r_0):
+        return rs_u,rs_d,rs_u_l,rs_u_d
+    # r_2test = np.linspace(1e-4,(1-r_0)/2,samples)
+    r_2test = np.linspace(1e-4,(1-r_0)/2,samples)
+    O_pm = norm.ppf(r_0/2+0.5)
+    O_r = quad(norm.ppf,r_0/2+0.5,1)[0]/(0.5-r_0/2)
+    Fs  = F_sec_N(r_2test,K,m,r_0)
+    cross_point = np.sign((Fs[0:-1]-1/K)*(Fs[1:]-1/K))*(-0.5) + 0.5
+    arg_check, = np.where(cross_point)
+    near_check = np.argmin(abs(Fs[:]-1/K))
+    check_err = abs(Fs[near_check] - 1/K)<1e-3
+    if len(arg_check)==2:
+        r_ss = []
+        for arg in arg_check:
+            r_a = r_2test[arg]
+            r_b = r_2test[arg+1]
+            r_s = Bisection(r_sec_New,r_a,r_b,eps=5e-3,end=15,arg = (r_0,O_r,O_pm,K,m,g_sec))
+            if np.isnan(r_s):
+                r_s = (r_a+r_b)/2
+            r_ss.append(r_s)
+        rs_d,rs_u = r_ss
+        rs_u_d = r_drift2(rs_u,r_0,O_r,O_pm,K,m,g=g_sec)
+        rs_u_l = r_lock2(rs_u,r_0,O_r,O_pm,K,m,g=g_sec)
+
+        return rs_d,rs_u,rs_u_l,rs_u_d
+    elif len(arg_check)==1:
+        for arg in arg_check:
+            r_a = r_2test[arg]
+            r_b = r_2test[arg+1]
+            r_s = Bisection(r_sec_New,r_a,r_b,eps=5e-3,end=15,arg = (r_0,O_r,O_pm,K,m,g_sec))
+            if np.isnan(r_s):
+                r_s = (r_a+r_b)/2
+        rs_u = r_s
+        rs_u_d = r_drift2(rs_u,r_0,O_r,O_pm,K,m,g=g_sec)
+        rs_u_l = r_lock2(rs_u,r_0,O_r,O_pm,K,m,g=g_sec)
+        return rs_d,rs_u,rs_u_l,rs_u_d
+    else:
+        if check_err:
+            r_a = r_2test[near_check] - 0.1
+            r_b = r_2test[near_check] + 0.1
+            r_s = Bisection(r_sec_New,r_a,r_b,eps=5e-3,end=15,arg = (r_0,O_r,O_pm,K,m,g_sec))
+            print(r_s)
+            rs_u = r_s
+            rs_u_d = r_drift2(rs_u,r_0,O_r,O_pm,K,m,g=g_sec)
+            rs_u_l = r_lock2(rs_u,r_0,O_r,O_pm,K,m,g=g_sec)
+        return rs_d,rs_u,rs_u_l,rs_u_d
+
 
 rm_numpy = np.vectorize(get_r_mean)
 rs_numpy = np.vectorize(get_r_sec)
+rs_N_numpy = np.vectorize(get_r_sec_N)
 # F_m1 = np.vectorize(F_mean)
 
 import warnings
@@ -344,5 +412,14 @@ warnings.filterwarnings(action='ignore')
 def make_r_rsec(m,Ks):
     r_d,r_u  = rm_numpy(Ks,m)
     r_mu = F_l1(r_u,Ks,m)*(Ks*r_u)
-    rs_d,rs_u,rs_u_l,rs_u_d = rs_numpy(Ks,m,r_u)
-    return m,Ks,r_d,r_u,r_mu,rs_d,rs_u,rs_u_l,rs_u_d
+    r_md = F_l1(r_d,Ks,m)*(Ks*r_d)
+    rs_d,rs_u,rs_u_l,rs_u_d = rs_numpy(Ks,m,r_mu)
+    return m,Ks,r_d,r_u,r_md,r_mu,rs_d,rs_u,rs_u_l,rs_u_d
+
+def make_r_rsec_N(m,Ks):
+    r_d,r_u  = rm_numpy(Ks,m)
+    r_mu = F_l1(r_u,Ks,m)*(Ks*r_u)
+    r_md = F_l1(r_d,Ks,m)*(Ks*r_d)
+    rs_d,rs_u,rs_u_l,rs_u_d = rs_numpy(Ks,m,r_mu)
+    return m,Ks,r_d,r_u,r_md,r_mu,rs_d,rs_u,rs_u_l,rs_u_d
+
