@@ -1,7 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-df = pd.read_csv('cluster.csv')
+df = pd.read_csv('cluster2.csv')
 K = df['K']
 m = df['m']
 rstd = df[r'$r$\'s temporal std']

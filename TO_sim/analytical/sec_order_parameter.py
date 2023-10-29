@@ -4,6 +4,7 @@ import pandas as pd
 from TO_sim.gen_Distribution import Normal, Quantile_Normal as Q_Normal, Lorentzian
 from scipy.integrate import quad
 from scipy.stats import norm
+from numba import jit
 
 def Bisection(f,r_a,r_b,eps =1e-5,end=30,arg=()):
     r_c = (r_a+r_b)/2
@@ -416,10 +417,10 @@ def make_r_rsec(m,Ks):
     rs_d,rs_u,rs_u_l,rs_u_d = rs_numpy(Ks,m,r_mu)
     return m,Ks,r_d,r_u,r_md,r_mu,rs_d,rs_u,rs_u_l,rs_u_d
 
-def make_r_rsec_N(m,Ks):
-    r_d,r_u  = rm_numpy(Ks,m)
+def make_r_rsec_N(m,Ks,samples=200):
+    r_d,r_u  = rm_numpy(Ks,m,samples=samples)
     r_mu = F_l1(r_u,Ks,m)*(Ks*r_u)
     r_md = F_l1(r_d,Ks,m)*(Ks*r_d)
-    rs_d,rs_u,rs_u_l,rs_u_d = rs_numpy(Ks,m,r_mu)
+    rs_d,rs_u,rs_u_l,rs_u_d = rs_N_numpy(Ks,m,r_mu,samples=samples)
     return m,Ks,r_d,r_u,r_md,r_mu,rs_d,rs_u,rs_u_l,rs_u_d
 
