@@ -83,7 +83,7 @@ def get_order_parameter_sets(theta,N):
     psi = np.angle(rpsi).reshape((-1,1))
     return r,psi
 
-# @numba.jit(nopython=True)
+@numba.jit(nopython=True)
 def Kuramoto_2nd_mf_sets(theta_sets,t,omega_sets,N,m,K_set):
     theta_sets = theta_sets.copy()
     theta,dtheta = theta_sets[:,:N],theta_sets[:,N:2*N]

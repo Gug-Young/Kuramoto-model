@@ -16,6 +16,48 @@ def RK4(f, y0, t, args=()):
         k4 = f(y[i] + k3 * h, t[i] + h, *args)
         y[i + 1] = y[i] + (h / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4)
     return y
+
+@numba.jit(nopython=True)
+def RK4_sets(f, y0, t, args=(),result_time = 0):
+    n = len(t) - result_time
+    h = t[1] - t[0]
+    if h <= 0.01:
+        n_save = n//10 + 1
+    else:
+        n_save = n
+    y = np.zeros((n_save, *y0.shape))
+    y[0] = y0
+    y_ = y0
+    for i in range(n - 1):
+        h = t[i + 1] - t[i]
+        k1 = f(y_, t, *args)
+        k2 = f(y_ + k1 * h / 2.0, t + h / 2.0, *args)
+        k3 = f(y_ + k2 * h / 2.0, t + h / 2.0, *args)
+        k4 = f(y_ + k3 * h, t + h, *args)
+        y_ = y_ + (h / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4)
+    y[0] = y_
+    num = 0
+
+    if h <= 0.01:
+        for i in range(n - 1):
+            k1= f(y_, t[i], *args)
+            k2= f(y_ + k1 * h / 2.0, t[i] + h / 2.0, *args)
+            k3= f(y_ + k2 * h / 2.0, t[i] + h / 2.0, *args)
+            k4= f(y_ + k3 * h, t[i] + h, *args)
+            y_ =y_ + (h / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4)
+            if i%10 == 0:
+                num+= 1
+                y[num] = y_
+    else:
+        for i in range(n - 1):
+            k1= f(y[i], t[i], *args)
+            k2= f(y[i] + k1 * h / 2.0, t[i] + h / 2.0, *args)
+            k3= f(y[i] + k2 * h / 2.0, t[i] + h / 2.0, *args)
+            k4= f(y[i] + k3 * h, t[i] + h, *args)
+            y[i + 1] = y[i] + (h / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4)
+    return y
+
+
 @numba.jit(nopython=True)
 def get_order_parameter(theta,N):
     ''' get theta and return r and theta'''
@@ -34,6 +76,9 @@ def Kuramoto_1st_mf(Theta,t,omega,N,m,K):
     Theta[:N] = dtheta
     Theta[N:2*N] = dtheta
     return Theta
+
+
+
 
 
 
