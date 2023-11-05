@@ -13,7 +13,7 @@ RK4_jit = IJ.RK4
 
 
 class Q_Norm_simul():
-    def __init__(self,N,K,m,dt = 0.1,t_end = 5000,seed = 10) -> None:
+    def __init__(self,N,K,m,dt = 0.1,t_end = 5000,seed = 10,start_p = False) -> None:
         '''input : N,K,m,dt. dt, t_end,seed'''
         self.seed = seed
         theta_random, omega, Kc = Q_Normal(N, 0, 1, seed=seed)
@@ -24,6 +24,8 @@ class Q_Norm_simul():
         self.t = np.arange(0, self.t_end+self.dt/2, self.dt)
         Theta = np.zeros(2*N)
         Theta[:N] = theta_random 
+        if start_p:
+            Theta[N:2*N] = omega
         self.Theta_init = Theta
         self.Theta_ori = Theta
     def solve(self):
