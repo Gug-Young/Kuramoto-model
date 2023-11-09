@@ -420,6 +420,95 @@ class Q_Norm_simul():
         KM_info['CLU_idx'] = df_cluster_idx
         return KM_info
     
+    def MK_space(self,m_start=0,m_end = 15,dm = 0.1):
+        N = self.N
+        self.dm = dm
+        ms = np.arange(m_start,m_end+dm/2,dm)
+        self.Theta_last = self.Theta_ori.copy()
+        df_rset = pd.DataFrame(columns=['r_mean','r0','r+','r-','r+_total','r-_total',
+                                        'sig_mean','sig0','sig+','sig-','sig+_total','sig-_total'],index=ms)
+        df_cluster = pd.DataFrame(columns=['S0','S+','S-','S+_total','S-_total',
+                                           'v0','v+','v-','v+_total','v-_total',
+                                           'max_O0','max_O+','max_O-','max_O+_total','max_O-_total',
+                                           'min_O0','min_O+','min_O-','min_O+_total','min_O-_total',
+                                           'mean_O0','mean_O+','mean_O-','mean_O+_total','mean_O-_total'],index=ms)
+        df_cluster_idx = pd.DataFrame(columns=['CLU0','CLU+','CLU-','CLU+_total','CLU-_total'],index=ms)
+        df_avglast = pd.DataFrame(columns=range(N),index=ms)
+        df_Thetalast = pd.DataFrame(columns=range(2*N),index=ms)
+
+        for m in ms:
+            self.m = m
+            self.Theta_init = self.Theta_ori.copy()
+            sol = self.solve()
+            clu_info = self.get_cluster()
+            r_info = self.get_r_clu()
+            c_type = r_info['clu_name']
+            r_cl = r_info['r_clu_mean_last']
+            sig_c = r_info['r_clu_std']
+            df_rset.loc[m]['r_mean'] = r_info['r_total_mean'][-1]
+            df_rset.loc[m]['sig_mean'] = r_info['r_total_std'][-1]
+            for c_t in c_type:
+                if c_t == '0':
+                    clu = clu_info['c_cluster'][c_t]
+                    df_rset.loc[m]['r0'] = r_cl[c_t]
+                    df_rset.loc[m]['sig0'] = sig_c[c_t][-1]
+                    df_cluster.loc[m]['S0'] = clu_info['c_size'][c_t]
+                    df_cluster.loc[m]['v0'] = clu_info['c_speed'][c_t]
+                    df_cluster.loc[m]['max_O0'] = np.max(self.omega[clu])
+                    df_cluster.loc[m]['min_O0'] = np.min(self.omega[clu])
+                    df_cluster.loc[m]['mean_O0'] = np.mean(self.omega[clu])
+                    df_cluster_idx.loc[m]['CLU0'] = np.sort(clu)
+                if c_t == '+':
+                    clu = clu_info['c_cluster'][c_t]
+                    df_rset.loc[m]['r+'] = r_cl[c_t]
+                    df_rset.loc[m]['sig+'] = sig_c[c_t][-1]
+                    df_cluster.loc[m]['S+'] = clu_info['c_size'][c_t]
+                    df_cluster.loc[m]['v+'] = clu_info['c_speed'][c_t]
+                    df_cluster.loc[m]['max_O+'] = np.max(self.omega[clu])
+                    df_cluster.loc[m]['min_O+'] = np.min(self.omega[clu])
+                    df_cluster.loc[m]['mean_O+'] = np.mean(self.omega[clu])
+                    df_cluster_idx.loc[m]['CLU+'] = np.sort(clu)
+                if c_t == '-':
+                    clu = clu_info['c_cluster'][c_t]
+                    df_rset.loc[m]['r-'] = r_cl[c_t]
+                    df_rset.loc[m]['sig-'] = sig_c[c_t][-1]
+                    df_cluster.loc[m]['S-'] = clu_info['c_size'][c_t]
+                    df_cluster.loc[m]['v-'] = clu_info['c_speed'][c_t]
+                    df_cluster.loc[m]['max_O-'] = np.max(self.omega[clu])
+                    df_cluster.loc[m]['min_O-'] = np.min(self.omega[clu])
+                    df_cluster.loc[m]['mean_O-'] = np.mean(self.omega[clu])
+                    df_cluster_idx.loc[m]['CLU-'] = np.sort(clu)
+                if c_t == '+_total':
+                    clu = clu_info['c_cluster'][c_t]
+                    df_rset.loc[m]['r+_total'] = r_cl[c_t]
+                    df_rset.loc[m]['sig+_total'] = sig_c[c_t][-1]
+                    df_cluster.loc[m]['S+_total'] = clu_info['c_size'][c_t]
+                    df_cluster.loc[m]['v+_total'] = clu_info['c_speed'][c_t]
+                    df_cluster.loc[m]['max_O+_total'] = np.max(self.omega[clu])
+                    df_cluster.loc[m]['min_O+_total'] = np.min(self.omega[clu])
+                    df_cluster.loc[m]['mean_O+_total'] = np.mean(self.omega[clu])
+                    df_cluster_idx.loc[m]['CLU+_total'] = np.sort(clu)
+                if c_t == '-_total':
+                    clu = clu_info['c_cluster'][c_t]
+                    df_rset.loc[m]['r-_total'] = r_cl[c_t]
+                    df_rset.loc[m]['sig-_total'] = sig_c[c_t][-1]
+                    df_cluster.loc[m]['S-_total'] = clu_info['c_size'][c_t]
+                    df_cluster.loc[m]['v-_total'] = clu_info['c_speed'][c_t]
+                    df_cluster.loc[m]['max_O-_total'] = np.max(self.omega[clu])
+                    df_cluster.loc[m]['min_O-_total'] = np.min(self.omega[clu])
+                    df_cluster.loc[m]['mean_O-_total'] = np.mean(self.omega[clu])
+                    df_cluster_idx.loc[m]['CLU-_total'] = np.sort(clu)
+            df_avglast.loc[m] = clu_info['avg_dtheta_last']
+            df_Thetalast.loc[m] = self.Theta_last
+        KM_info = {}
+        KM_info['ms'] = ms
+        KM_info['r_info'] = df_rset
+        KM_info['cluster_info'] = df_cluster 
+        KM_info['avg_dtheta'] = df_avglast
+        KM_info['Theta_last'] = df_Thetalast
+        KM_info['CLU_idx'] = df_cluster_idx
+        return KM_info
+    
     
     def get_STEP(self,TLO_info,s_length=2):
         S0 = TLO_info['cluster_info']['S0'].dropna()
