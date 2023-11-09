@@ -6,18 +6,18 @@ def MK_space(seed,N,K,m_span,t_end,start_p):
     Qsimul = QSIM.Q_Norm_simul(N,K=K,m = m,t_end=t_end,seed=seed,start_p=start_p)
     MK_info = Qsimul.MK_space(m_start,m_end,dm)
     ms = MK_info['ms']
-    r0 = MK_info['r_info'][['r0']].to_numpy(float)
-    rM = MK_info['r_info'][['r_mean']].to_numpy(float)
+    r0 = MK_info['r_info']['r0'].to_numpy(float)
+    rM = MK_info['r_info']['r_mean'].to_numpy(float)
     
-    rp = MK_info['r_info'][['r+']].to_numpy(float)
-    rp_total = MK_info['r_info'][['r+_total']].to_numpy(float)
+    rp = MK_info['r_info']['r+'].to_numpy(float)
+    rp_total = MK_info['r_info']['r+_total'].to_numpy(float)
     
-    rm = MK_info['r_info'][['r-']].to_numpy(float)
-    rm_total = MK_info['r_info'][['r-_total']].to_numpy(float)
+    rm = MK_info['r_info']['r-'].to_numpy(float)
+    rm_total = MK_info['r_info']['r-_total'].to_numpy(float)
     
-    sig = MK_info['r_info'][['sig_mean']].to_numpy(float)
-    sigPT = MK_info['r_info'][['sig+_total']].to_numpy(float)
-    sigMT = MK_info['r_info'][['sig-_total']].to_numpy(float)
+    sig = MK_info['r_info']['sig_mean'].to_numpy(float)
+    sigPT = MK_info['r_info']['sig+_total'].to_numpy(float)
+    sigMT = MK_info['r_info']['sig-_total'].to_numpy(float)
 
     S0 = MK_info['cluster_info']['S0'].to_numpy(float)
     SP = MK_info['cluster_info']['S+'].to_numpy(float)
@@ -55,19 +55,19 @@ def KM_space(seed,N,m,K_span,t_end,start_p):
     Qsimul = QSIM.Q_Norm_simul(N,K=K,m = m,t_end=t_end,seed=seed,start_p=start_p)
     KM_info = Qsimul.KM_space(K_start,K_end,dK)
     Ks = KM_info['Ks']
-    r0 = KM_info['r_info'][['r0']].to_numpy(float)
-    rM = KM_info['r_info'][['r_mean']].to_numpy(float)
+    r0 = KM_info['r_info']['r0'].to_numpy(float)
+    rM = KM_info['r_info']['r_mean'].to_numpy(float)
 
     
-    rp = KM_info['r_info'][['r+']].to_numpy(float)
-    rp_total = KM_info['r_info'][['r+_total']].to_numpy(float)
+    rp = KM_info['r_info']['r+'].to_numpy(float)
+    rp_total = KM_info['r_info']['r+_total'].to_numpy(float)
     
-    rm = KM_info['r_info'][['r-']].to_numpy(float)
-    rm_total = KM_info['r_info'][['r-_total']].to_numpy(float)
+    rm = KM_info['r_info']['r-'].to_numpy(float)
+    rm_total = KM_info['r_info']['r-_total'].to_numpy(float)
     
-    sig = KM_info['r_info'][['sig_mean']].to_numpy(float)
-    sigPT = KM_info['r_info'][['sig+_total']].to_numpy(float)
-    sigMT = KM_info['r_info'][['sig-_total']].to_numpy(float)
+    sig = KM_info['r_info']['sig_mean'].to_numpy(float)
+    sigPT = KM_info['r_info']['sig+_total'].to_numpy(float)
+    sigMT = KM_info['r_info']['sig-_total'].to_numpy(float)
 
     S0 = KM_info['cluster_info']['S0'].to_numpy(float)
     SP = KM_info['cluster_info']['S+'].to_numpy(float)
