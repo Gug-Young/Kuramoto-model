@@ -81,8 +81,6 @@ def Kuramoto_1st_mf(Theta,t,omega,N,m,K):
 
 
 
-
-
 # def RK4_r_sets(f, y0, t, args=(),result_time = 0):
 #     n = len(t) - result_time
 #     h = t[1] - t[0]
@@ -91,7 +89,7 @@ def Kuramoto_1st_mf(Theta,t,omega,N,m,K):
 #     else:
 #         n_save = n
     
-#     y = np.zeros((n_save, *y0.shape))
+#     y = cp.zeros((n_save, *y0.shape))
 #     N_set = len(y0)
 #     _,N,_,_ = args
 #     rs = np.zeros((n+result_time,N_set,1))
