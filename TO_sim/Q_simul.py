@@ -10,6 +10,7 @@ import TO_sim.analytical.order_sec_parameter as OSP
 import TO_sim.Integrator_jit as IJ
 
 RK4_jit = IJ.RK4
+RK4_jit_short = IJ.RK4_short
 
 
 class Q_Norm_simul():
@@ -52,6 +53,7 @@ class Q_Norm_simul():
         self.r_mean = np.mean(rs[-500:])
         solution = {}
         solution['rs'] = rs
+        solution['r_mean'] = self.r_mean
         solution['r_std'] = np.std(rs[-2000:])
         solution['t'] = t
         solution['theta'] = theta
@@ -59,14 +61,14 @@ class Q_Norm_simul():
         solution['Theta_last'] = sol[-1]
         return solution
     
-    def solve_short(self):
+    def solve_short(self,result_time=2010):
         t = self.t
         if self.m == 0:
             func = Kuramoto_1st_mf
         else:
             func = Kuramoto_2nd_mf
             
-        sol = RK4_jit(func,self.Theta_init,t, args=(self.omega, self.N, self.m, self.K))
+        sol = RK4_jit_short(func,self.Theta_init,t, args=(self.omega, self.N, self.m, self.K),result_time=result_time)
         self.Last_sol = sol[-1]
         N = self.N
         theta,dtheta = sol[:,:N],sol[:,N:2*N]
@@ -83,6 +85,7 @@ class Q_Norm_simul():
         self.r_mean = np.mean(rs[-500:])
         solution = {}
         solution['rs'] = rs
+        solution['r_mean'] = self.r_mean
         solution['r_std'] = np.std(rs[-2000:])
         solution['t'] = t
         solution['theta'] = theta
@@ -92,10 +95,7 @@ class Q_Norm_simul():
     
     def get_cluster(self,sum_time=2000):
         N = self.N
-
-        dtheta_c = np.cumsum(self.dtheta[-2010:], axis=0)
-        avg_dtheta = (dtheta_c[sum_time:]-dtheta_c[:-sum_time])/sum_time
-        diff_avg_dtheta = np.diff(avg_dtheta, axis=1)
+        avg_dtheta = np.array([np.mean(self.dtheta[-sum_time-i:-i],axis=0) for i in range(10,0,-1)])
         c_threshold = np.where(self.r_mean<0.05,1e-5,2e-3)
         CS, CMP, cluster, omega_s, omega_e, CMO, Is_group, C_s, C_e = cluster_os_new2(
             avg_dtheta[-10:], height=15e-2, c_std=3, check=c_threshold, c_size=3, N=N, omega=self.omega)
@@ -188,6 +188,33 @@ class Q_Norm_simul():
         r_clu_info['r_total_mean'] =  rs_mean
         r_clu_info['r_total_std'] =  rs_std
         return r_clu_info
+    
+    
+    def get_r_clu_last(self,sum_time=500):
+        N = self.N
+        r_clu_info = {}
+        cluster_info = self.get_cluster()
+        cluster_s = cluster_info['c_cluster']
+        c_name = cluster_s.keys()
+        r_clus_std = {}
+        r_clus_mean_last = {}
+        rs = self.rs
+        for name  in c_name:
+            clu = cluster_s[name]
+            temp = 1/N*np.sum(np.exp(1j*self.theta[-sum_time:, clu]), axis=1)
+            rc = np.abs(temp)
+            rc_mean = np.array([np.mean(rc[:sum_time], axis=0)])
+            rc_std = np.array([np.std(rc[:sum_time], axis=0)])
+            r_clus_std[name]=rc_std
+            r_clus_mean_last[name]=rc_mean[-1]
+        rs_mean = np.array([np.mean(rs[:sum_time], axis=0)])
+        rs_std = np.array([np.std(rs[:sum_time], axis=0)])
+        r_clu_info['clu_name'] =  c_name
+        r_clu_info['r_clu_mean_last'] =  r_clus_mean_last
+        r_clu_info['r_clu_std'] =  r_clus_std
+        r_clu_info['r_total_mean'] =  rs_mean
+        r_clu_info['r_total_std'] =  rs_std
+        return r_clu_info
     def TLO(self,K_end = 15,dK = 0.1):
         N = self.N
         self.dK = dK
@@ -207,7 +234,7 @@ class Q_Norm_simul():
         for K in Ks:
             self.K = K
             self.Theta_init = self.Theta_last
-            sol = self.solve()
+            sol = self.solve_short(result_time=self.t_end*10+1-2010)
             clu_info = self.get_cluster()
             r_info = self.get_r_clu()
             c_type = r_info['clu_name']
@@ -297,9 +324,9 @@ class Q_Norm_simul():
         for K in Ks[::-1]:
             self.K = K
             self.Theta_init = self.Theta_last
-            sol = self.solve()
+            sol = self.solve_short(result_time=self.t_end*10+1-2010)
             clu_info = self.get_cluster()
-            r_info = self.get_r_clu()
+            r_info = self.get_r_clu_last()
             c_type = r_info['clu_name']
             r_cl = r_info['r_clu_mean_last']
             sig_c = r_info['r_clu_std']
@@ -380,16 +407,16 @@ class Q_Norm_simul():
                                            'max_O0','max_O+','max_O-','max_O+_total','max_O-_total',
                                            'min_O0','min_O+','min_O-','min_O+_total','min_O-_total',
                                            'mean_O0','mean_O+','mean_O-','mean_O+_total','mean_O-_total'],index=Ks)
-        df_cluster_idx = pd.DataFrame(columns=['CLU0','CLU+','CLU-','CLU+_total','CLU-_total'],index=Ks)
-        df_avglast = pd.DataFrame(columns=range(N),index=Ks)
-        df_Thetalast = pd.DataFrame(columns=range(2*N),index=Ks)
+        # df_cluster_idx = pd.DataFrame(columns=['CLU0','CLU+','CLU-','CLU+_total','CLU-_total'],index=Ks)
+        # df_avglast = pd.DataFrame(columns=range(N),index=Ks)
+        # df_Thetalast = pd.DataFrame(columns=range(2*N),index=Ks)
 
         for K in Ks:
             self.K = K
             self.Theta_init = self.Theta_ori.copy()
-            sol = self.solve()
+            sol = self.solve_short(result_time=self.t_end*10+1-2010)
             clu_info = self.get_cluster()
-            r_info = self.get_r_clu()
+            r_info = self.get_r_clu_last()
             c_type = r_info['clu_name']
             r_cl = r_info['r_clu_mean_last']
             sig_c = r_info['r_clu_std']
@@ -405,7 +432,7 @@ class Q_Norm_simul():
                     df_cluster.loc[K]['max_O0'] = np.max(self.omega[clu])
                     df_cluster.loc[K]['min_O0'] = np.min(self.omega[clu])
                     df_cluster.loc[K]['mean_O0'] = np.mean(self.omega[clu])
-                    df_cluster_idx.loc[K]['CLU0'] = np.sort(clu)
+                    # df_cluster_idx.loc[K]['CLU0'] = np.sort(clu)
                 if c_t == '+':
                     clu = clu_info['c_cluster'][c_t]
                     df_rset.loc[K]['r+'] = r_cl[c_t]
@@ -415,7 +442,7 @@ class Q_Norm_simul():
                     df_cluster.loc[K]['max_O+'] = np.max(self.omega[clu])
                     df_cluster.loc[K]['min_O+'] = np.min(self.omega[clu])
                     df_cluster.loc[K]['mean_O+'] = np.mean(self.omega[clu])
-                    df_cluster_idx.loc[K]['CLU+'] = np.sort(clu)
+                    # df_cluster_idx.loc[K]['CLU+'] = np.sort(clu)
                 if c_t == '-':
                     clu = clu_info['c_cluster'][c_t]
                     df_rset.loc[K]['r-'] = r_cl[c_t]
@@ -425,7 +452,7 @@ class Q_Norm_simul():
                     df_cluster.loc[K]['max_O-'] = np.max(self.omega[clu])
                     df_cluster.loc[K]['min_O-'] = np.min(self.omega[clu])
                     df_cluster.loc[K]['mean_O-'] = np.mean(self.omega[clu])
-                    df_cluster_idx.loc[K]['CLU-'] = np.sort(clu)
+                    # df_cluster_idx.loc[K]['CLU-'] = np.sort(clu)
                 if c_t == '+_total':
                     clu = clu_info['c_cluster'][c_t]
                     df_rset.loc[K]['r+_total'] = r_cl[c_t]
@@ -435,7 +462,7 @@ class Q_Norm_simul():
                     df_cluster.loc[K]['max_O+_total'] = np.max(self.omega[clu])
                     df_cluster.loc[K]['min_O+_total'] = np.min(self.omega[clu])
                     df_cluster.loc[K]['mean_O+_total'] = np.mean(self.omega[clu])
-                    df_cluster_idx.loc[K]['CLU+_total'] = np.sort(clu)
+                    # df_cluster_idx.loc[K]['CLU+_total'] = np.sort(clu)
                 if c_t == '-_total':
                     clu = clu_info['c_cluster'][c_t]
                     df_rset.loc[K]['r-_total'] = r_cl[c_t]
@@ -445,16 +472,15 @@ class Q_Norm_simul():
                     df_cluster.loc[K]['max_O-_total'] = np.max(self.omega[clu])
                     df_cluster.loc[K]['min_O-_total'] = np.min(self.omega[clu])
                     df_cluster.loc[K]['mean_O-_total'] = np.mean(self.omega[clu])
-                    df_cluster_idx.loc[K]['CLU-_total'] = np.sort(clu)
-            df_avglast.loc[K] = clu_info['avg_dtheta_last']
-            df_Thetalast.loc[K] = self.Theta_last
+                    # df_cluster_idx.loc[K]['CLU-_total'] = np.sort(clu)
+            # df_avglast.loc[K] = clu_info['avg_dtheta_last']
         KM_info = {}
         KM_info['Ks'] = Ks
         KM_info['r_info'] = df_rset
         KM_info['cluster_info'] = df_cluster 
-        KM_info['avg_dtheta'] = df_avglast
-        KM_info['Theta_last'] = df_Thetalast
-        KM_info['CLU_idx'] = df_cluster_idx
+        # KM_info['avg_dtheta'] = df_avglast
+        # KM_info['Theta_last'] = df_Thetalast
+        # KM_info['CLU_idx'] = df_cluster_idx
         return KM_info
     
     def MK_space(self,m_start=0,m_end = 15,dm = 0.1):
@@ -469,16 +495,16 @@ class Q_Norm_simul():
                                            'max_O0','max_O+','max_O-','max_O+_total','max_O-_total',
                                            'min_O0','min_O+','min_O-','min_O+_total','min_O-_total',
                                            'mean_O0','mean_O+','mean_O-','mean_O+_total','mean_O-_total'],index=ms)
-        df_cluster_idx = pd.DataFrame(columns=['CLU0','CLU+','CLU-','CLU+_total','CLU-_total'],index=ms)
-        df_avglast = pd.DataFrame(columns=range(N),index=ms)
-        df_Thetalast = pd.DataFrame(columns=range(2*N),index=ms)
+        # df_cluster_idx = pd.DataFrame(columns=['CLU0','CLU+','CLU-','CLU+_total','CLU-_total'],index=ms)
+        # df_avglast = pd.DataFrame(columns=range(N),index=ms)
+        # df_Thetalast = pd.DataFrame(columns=range(2*N),index=ms)
 
         for m in ms:
             self.m = m
             self.Theta_init = self.Theta_ori.copy()
             sol = self.solve()
             clu_info = self.get_cluster()
-            r_info = self.get_r_clu()
+            r_info = self.get_r_clu_last()
             c_type = r_info['clu_name']
             r_cl = r_info['r_clu_mean_last']
             sig_c = r_info['r_clu_std']
@@ -494,7 +520,7 @@ class Q_Norm_simul():
                     df_cluster.loc[m]['max_O0'] = np.max(self.omega[clu])
                     df_cluster.loc[m]['min_O0'] = np.min(self.omega[clu])
                     df_cluster.loc[m]['mean_O0'] = np.mean(self.omega[clu])
-                    df_cluster_idx.loc[m]['CLU0'] = np.sort(clu)
+                    # df_cluster_idx.loc[m]['CLU0'] = np.sort(clu)
                 if c_t == '+':
                     clu = clu_info['c_cluster'][c_t]
                     df_rset.loc[m]['r+'] = r_cl[c_t]
@@ -504,7 +530,7 @@ class Q_Norm_simul():
                     df_cluster.loc[m]['max_O+'] = np.max(self.omega[clu])
                     df_cluster.loc[m]['min_O+'] = np.min(self.omega[clu])
                     df_cluster.loc[m]['mean_O+'] = np.mean(self.omega[clu])
-                    df_cluster_idx.loc[m]['CLU+'] = np.sort(clu)
+                    # df_cluster_idx.loc[m]['CLU+'] = np.sort(clu)
                 if c_t == '-':
                     clu = clu_info['c_cluster'][c_t]
                     df_rset.loc[m]['r-'] = r_cl[c_t]
@@ -514,7 +540,7 @@ class Q_Norm_simul():
                     df_cluster.loc[m]['max_O-'] = np.max(self.omega[clu])
                     df_cluster.loc[m]['min_O-'] = np.min(self.omega[clu])
                     df_cluster.loc[m]['mean_O-'] = np.mean(self.omega[clu])
-                    df_cluster_idx.loc[m]['CLU-'] = np.sort(clu)
+                    # df_cluster_idx.loc[m]['CLU-'] = np.sort(clu)
                 if c_t == '+_total':
                     clu = clu_info['c_cluster'][c_t]
                     df_rset.loc[m]['r+_total'] = r_cl[c_t]
@@ -525,7 +551,7 @@ class Q_Norm_simul():
                         df_cluster.loc[m]['max_O+_total'] = np.max(self.omega[clu])
                         df_cluster.loc[m]['min_O+_total'] = np.min(self.omega[clu])
                         df_cluster.loc[m]['mean_O+_total'] = np.mean(self.omega[clu])
-                        df_cluster_idx.loc[m]['CLU+_total'] = np.sort(clu)
+                        # df_cluster_idx.loc[m]['CLU+_total'] = np.sort(clu)
                 if c_t == '-_total':
                     clu = clu_info['c_cluster'][c_t]
                     df_rset.loc[m]['r-_total'] = r_cl[c_t]
@@ -536,16 +562,16 @@ class Q_Norm_simul():
                         df_cluster.loc[m]['max_O-_total'] = np.max(self.omega[clu])
                         df_cluster.loc[m]['min_O-_total'] = np.min(self.omega[clu])
                         df_cluster.loc[m]['mean_O-_total'] = np.mean(self.omega[clu])
-                        df_cluster_idx.loc[m]['CLU-_total'] = np.sort(clu)
-            df_avglast.loc[m] = clu_info['avg_dtheta_last']
-            df_Thetalast.loc[m] = self.Theta_last
+                        # df_cluster_idx.loc[m]['CLU-_total'] = np.sort(clu)
+            # df_avglast.loc[m] = clu_info['avg_dtheta_last']
+            # df_Thetalast.loc[m] = self.Theta_last
         KM_info = {}
         KM_info['ms'] = ms
         KM_info['r_info'] = df_rset
         KM_info['cluster_info'] = df_cluster 
-        KM_info['avg_dtheta'] = df_avglast
-        KM_info['Theta_last'] = df_Thetalast
-        KM_info['CLU_idx'] = df_cluster_idx
+        # KM_info['avg_dtheta'] = df_avglast
+        # KM_info['Theta_last'] = df_Thetalast
+        # KM_info['CLU_idx'] = df_cluster_idx
         return KM_info
     
     
