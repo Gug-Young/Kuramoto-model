@@ -18,6 +18,21 @@ def RK4(f, y0, t, args=()):
     return y
 
 @numba.jit(nopython=True)
+def RK4_short(f, y0, t, args=(),result_time = 2010):
+    n = len(t)
+    y = np.zeros((n, len(y0)))
+    y[0] = y0
+
+    for i in range(n - 1):
+        h = t[i + 1] - t[i]
+        k1 = f(y[i], t[i], *args)
+        k2 = f(y[i] + k1 * h / 2.0, t[i] + h / 2.0, *args)
+        k3 = f(y[i] + k2 * h / 2.0, t[i] + h / 2.0, *args)
+        k4 = f(y[i] + k3 * h, t[i] + h, *args)
+        y[i + 1] = y[i] + (h / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4)
+    return y
+
+@numba.jit(nopython=True)
 def RK4_sets(f, y0, t, args=(),result_time = 0):
     n = len(t) - result_time
     h = t[1] - t[0]

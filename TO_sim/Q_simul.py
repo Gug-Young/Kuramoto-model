@@ -58,10 +58,42 @@ class Q_Norm_simul():
         solution['dtheta'] = dtheta
         solution['Theta_last'] = sol[-1]
         return solution
+    
+    def solve_short(self):
+        t = self.t
+        if self.m == 0:
+            func = Kuramoto_1st_mf
+        else:
+            func = Kuramoto_2nd_mf
+            
+        sol = RK4_jit(func,self.Theta_init,t, args=(self.omega, self.N, self.m, self.K))
+        self.Last_sol = sol[-1]
+        N = self.N
+        theta,dtheta = sol[:,:N],sol[:,N:2*N]
+        rs = np.abs(np.mean(np.exp(theta.T*1j),axis=0))
+        if self.dt <0.1:
+            t = t[::10]
+            theta = theta[::10]
+            dtheta = dtheta[::10]
+            rs = rs[::10]
+        self.rs = rs
+        self.theta = theta
+        self.dtheta = dtheta
+        self.Theta_last = sol[-1]
+        self.r_mean = np.mean(rs[-500:])
+        solution = {}
+        solution['rs'] = rs
+        solution['r_std'] = np.std(rs[-2000:])
+        solution['t'] = t
+        solution['theta'] = theta
+        solution['dtheta'] = dtheta
+        solution['Theta_last'] = sol[-1]
+        return solution
+    
     def get_cluster(self,sum_time=2000):
         N = self.N
 
-        dtheta_c = np.cumsum(self.dtheta[-4000:], axis=0)
+        dtheta_c = np.cumsum(self.dtheta[-2010:], axis=0)
         avg_dtheta = (dtheta_c[sum_time:]-dtheta_c[:-sum_time])/sum_time
         diff_avg_dtheta = np.diff(avg_dtheta, axis=1)
         c_threshold = np.where(self.r_mean<0.05,1e-5,2e-3)
