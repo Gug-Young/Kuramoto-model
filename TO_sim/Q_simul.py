@@ -7,6 +7,7 @@ from scipy.stats import norm
 from TO_sim.get_cluster import cluster_os_new2
 from TO_sim.gen_Distribution import Normal, Quantile_Normal as Q_Normal, Lorentzian
 import TO_sim.analytical.order_sec_parameter as OSP
+import TO_sim.analytical.sec_order_parameter2 as OSP2
 import TO_sim.Integrator_jit as IJ
 
 RK4_jit = IJ.RK4
@@ -234,9 +235,10 @@ class Q_Norm_simul():
         for K in Ks:
             self.K = K
             self.Theta_init = self.Theta_last
-            sol = self.solve_short(result_time=self.t_end*10+1-2010)
+            sol = self.solve()
             clu_info = self.get_cluster()
             r_info = self.get_r_clu()
+            # print(r_info)
             c_type = r_info['clu_name']
             r_cl = r_info['r_clu_mean_last']
             sig_c = r_info['r_clu_std']
@@ -324,7 +326,7 @@ class Q_Norm_simul():
         for K in Ks[::-1]:
             self.K = K
             self.Theta_init = self.Theta_last
-            sol = self.solve_short(result_time=self.t_end*10+1-2010)
+            sol = self.solve()
             clu_info = self.get_cluster()
             r_info = self.get_r_clu_last()
             c_type = r_info['clu_name']
@@ -601,10 +603,12 @@ class Q_Norm_simul():
         for s_start,s_end in zip(STEP_start,STEP_end):
             iloc = np.searchsorted(Ks_,s_start)
             r_0 = TLO_info['r_info']['r0'].iloc[iloc]
+            r_M = TLO_info['r_info']['r_mean'].iloc[iloc]
             O_0 = norm.ppf(r_0/2+0.5)
-            _,F_RMu,_,F_R0u =  OSP.Make_R0_function(self.m,O_0)
+            O_0 = 4/np.pi*np.sqrt(s_start*r_M/self.m) #- 0.3056*self.m**(3/2)/np.sqrt(s_start*r_M)
+            _,F_RMu,_,F_R0u =  OSP2.Make_R0_function(self.m,O_0)
             Ks_S = np.arange(s_start-P_dK/4,s_end+P_dK+dK/2,dK)
-            rs_d,rs_u= OSP.get_r_sec_np(Ks_S,self.m,F_R0u,samples=30)
+            rs_dt,rs_ut,rs_d,rs_u,md,mu= OSP2.get_r_sec_np(Ks_S,self.m,F_RMu,samples=30)
             df_STEP.loc[s_start]['S_start'] = s_start
             df_STEP.loc[s_start]['S_end'] = s_end
             df_STEP.loc[s_start]['Ks_step'] = Ks_S
