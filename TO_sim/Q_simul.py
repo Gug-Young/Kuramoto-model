@@ -600,15 +600,26 @@ class Q_Norm_simul():
         dK = Ks[1] - Ks[0]
         Ks_ = TLO_info['Theta_last'].index
         df_STEP = pd.DataFrame(columns=['S_start','S_end','Ks_step','F_RMu','F_R0u','rs_d','rs_u'],index=STEP_start)
+        _,F_RMu_,_,F_R0u_ =  OSP2.Make_R_function(self.m)
+
         for s_start,s_end in zip(STEP_start,STEP_end):
             iloc = np.searchsorted(Ks_,s_start)
-            r_0 = TLO_info['r_info']['r0'].iloc[iloc]
-            r_M = TLO_info['r_info']['r_mean'].iloc[iloc]
-            O_0 = norm.ppf(r_0/2+0.5)
-            O_0 = 4/np.pi*np.sqrt(s_start*r_M/self.m) #- 0.3056*self.m**(3/2)/np.sqrt(s_start*r_M)
-            _,F_RMu,_,F_R0u =  OSP2.Make_R0_function(self.m,O_0)
+            # r_0 = TLO_info['r_info']['r0'].iloc[iloc]
+            # O_O = TLO_info['cluster_info']['max_O0'].iloc[iloc]
+            # r_M = TLO_info['r_info']['r_mean'].iloc[iloc]
+            # r_p = TLO_info['r_info']['r+'].iloc[iloc]
+            O_O = 4/np.pi * np.sqrt(F_RMu_(s_start)*s_start/self.m)- 0.3056*1/np.sqrt(s_start*F_RMu_(s_start)*self.m**3)
+            _,F_RMu,_,F_R0u =  OSP2.Make_R0_function(self.m,O_O)
+            _,_,rs_d,rs_u,_,_= OSP2.get_r_sec_np(s_start,self.m,F_RMu_,samples=30)
+
+            r0 = F_R0u(s_start)
+            rp = rs_u
+            shift_O = -(s_start**2*rp*r0)/(2*self.m*(1/self.m**2+(O_O)**2))  -(s_start**2*rp*rp)/(2*self.m*(1/self.m**2+(O_O)**2))
+
+            O_2O = O_O-shift_O + 4/np.pi * np.sqrt(rp*s_start/self.m) - 0.3056*1/np.sqrt(s_start*rp*self.m**3)
             Ks_S = np.arange(s_start-P_dK/4,s_end+P_dK+dK/2,dK)
-            rs_dt,rs_ut,rs_d,rs_u,md,mu= OSP2.get_r_sec_np(Ks_S,self.m,F_RMu,samples=30)
+            # rs_dt,rs_ut,rs_d,rs_u,md,mu= OSP2.get_r_sec_np(Ks_S,self.m,F_RMu,samples=30)
+            _,_,rs_d,rs_u= OSP2.get_r_sec0_np(Ks_S,r0,shift_O,self.m,O_O,O_2O,F_RMu,samples=30)
             df_STEP.loc[s_start]['S_start'] = s_start
             df_STEP.loc[s_start]['S_end'] = s_end
             df_STEP.loc[s_start]['Ks_step'] = Ks_S
