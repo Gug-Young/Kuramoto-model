@@ -180,24 +180,26 @@ def F_sec0(r,r_last,K,shift_O,m,O_0,O_20,F_R0,g=g_sec):
     O_pm = O_0
     O_d = O_20-(O_0-shift_O)
     if K*r<=O_d:
-        # r_last = norm.cdf(O_0)-norm.cdf(-O_0)
+        r_last = norm.cdf(O_0)
+
         # r_s = np.linspace(norm.cdf(O_0),norm.cdf(O_0)+r,10000,endpoint=False)
-        r_s = np.linspace(r_last/2+0.5,r_last/2+0.5+r,20000,endpoint=False)
+        r_s = np.linspace(r_last,r_last+r,20000,endpoint=False)
         A = norm.ppf(r_s)
         O_r = np.mean(A)
         # shift_O = -(K**2*r*r_last)/(2*m*(1/m**2+(O_pm)**2)) -(K**2*r*r)/(2*m*(1/m**2+(O_pm)**2))
         shift_O = -abs(O_r-O_0)
         # print(shift_O)
         O_d = min(O_d,K*r)
-    # elif bs*K*r>O_d:
-    #     r_s = np.linspace(r_last/2+0.5,r_last/2+0.5+r,20000,endpoint=False)
-    #     A = norm.ppf(r_s)
-    #     O_r = np.mean(A)
-    #     O_d = bs*K*r
-    # O_d2 = np.where(O_d<K*r,O_d,K*r)
-    # O_SD =(K*r_0/2-(O_0-shift_O))
-    # if O_SD<0:
-    #     O_d = 0
+    elif bs*K*r>O_d:
+        r_last = norm.cdf(O_0)
+        r_s = np.linspace(r_last,r_last+r,20000,endpoint=False)
+        A = norm.ppf(r_s)
+        O_r = np.mean(A)
+        O_d = bs*K*r
+    O_d2 = np.where(O_d<K*r,O_d,K*r)
+    O_SD =(K*r_0/2-(O_0-shift_O))
+    if O_SD<0:
+        O_d = 0
     integrand_drift = lambda x:1/(2*(m*(x+O_pm-shift_O)**2+1/m))*g(x,O_pm-shift_O,O_pm)
     integrand_lock = lambda x:g(x,O_pm-shift_O,O_pm)*np.sqrt(1-((x)/X)**2)
 
