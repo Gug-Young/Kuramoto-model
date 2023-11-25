@@ -461,9 +461,14 @@ class Q_Norm_simul():
                     df_rset.loc[K]['sig+_total'] = sig_c[c_t][-1]
                     df_cluster.loc[K]['S+_total'] = clu_info['c_size'][c_t]
                     df_cluster.loc[K]['v+_total'] = clu_info['c_speed'][c_t]
-                    df_cluster.loc[K]['max_O+_total'] = np.max(self.omega[clu])
-                    df_cluster.loc[K]['min_O+_total'] = np.min(self.omega[clu])
-                    df_cluster.loc[K]['mean_O+_total'] = np.mean(self.omega[clu])
+                    if len(clu) != 0:
+                        df_cluster.loc[K]['max_O+_total'] = np.max(self.omega[clu])
+                        df_cluster.loc[K]['min_O+_total'] = np.min(self.omega[clu])
+                        df_cluster.loc[K]['mean_O+_total'] = np.mean(self.omega[clu])
+                    else:
+                        df_cluster.loc[K]['max_O+_total'] = np.nan
+                        df_cluster.loc[K]['min_O+_total'] = np.nan
+                        df_cluster.loc[K]['mean_O+_total'] = np.nan
                     # df_cluster_idx.loc[K]['CLU+_total'] = np.sort(clu)
                 if c_t == '-_total':
                     clu = clu_info['c_cluster'][c_t]
@@ -471,9 +476,15 @@ class Q_Norm_simul():
                     df_rset.loc[K]['sig-_total'] = sig_c[c_t][-1]
                     df_cluster.loc[K]['S-_total'] = clu_info['c_size'][c_t]
                     df_cluster.loc[K]['v-_total'] = clu_info['c_speed'][c_t]
-                    df_cluster.loc[K]['max_O-_total'] = np.max(self.omega[clu])
-                    df_cluster.loc[K]['min_O-_total'] = np.min(self.omega[clu])
-                    df_cluster.loc[K]['mean_O-_total'] = np.mean(self.omega[clu])
+                    if len(clu) != 0:
+                        df_cluster.loc[K]['max_O-_total'] = np.max(self.omega[clu])
+                        df_cluster.loc[K]['min_O-_total'] = np.min(self.omega[clu])
+                        df_cluster.loc[K]['mean_O-_total'] = np.mean(self.omega[clu])
+                    else:
+                        df_cluster.loc[K]['max_O-_total'] = np.nan
+                        df_cluster.loc[K]['min_O-_total'] = np.nan
+                        df_cluster.loc[K]['mean_O-_total'] = np.nan
+
                     # df_cluster_idx.loc[K]['CLU-_total'] = np.sort(clu)
             # df_avglast.loc[K] = clu_info['avg_dtheta_last']
         KM_info = {}
@@ -553,6 +564,10 @@ class Q_Norm_simul():
                         df_cluster.loc[m]['max_O+_total'] = np.max(self.omega[clu])
                         df_cluster.loc[m]['min_O+_total'] = np.min(self.omega[clu])
                         df_cluster.loc[m]['mean_O+_total'] = np.mean(self.omega[clu])
+                    else:
+                        df_cluster.loc[m]['max_O+_total'] =np.nan
+                        df_cluster.loc[m]['min_O+_total'] =np.nan
+                        df_cluster.loc[m]['mean_O+_total'] =np.nan
                         # df_cluster_idx.loc[m]['CLU+_total'] = np.sort(clu)
                 if c_t == '-_total':
                     clu = clu_info['c_cluster'][c_t]
@@ -564,6 +579,10 @@ class Q_Norm_simul():
                         df_cluster.loc[m]['max_O-_total'] = np.max(self.omega[clu])
                         df_cluster.loc[m]['min_O-_total'] = np.min(self.omega[clu])
                         df_cluster.loc[m]['mean_O-_total'] = np.mean(self.omega[clu])
+                    else:
+                        df_cluster.loc[m]['max_O-_total'] = np.nan
+                        df_cluster.loc[m]['min_O-_total'] = np.nan
+                        df_cluster.loc[m]['mean_O-_total'] = np.nan
                         # df_cluster_idx.loc[m]['CLU-_total'] = np.sort(clu)
             # df_avglast.loc[m] = clu_info['avg_dtheta_last']
             # df_Thetalast.loc[m] = self.Theta_last
