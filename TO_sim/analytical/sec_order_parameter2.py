@@ -139,7 +139,8 @@ def F_lock2(r,K,m,F_R0, g=g_sec):
 
     r_0 = F_R0(K)
     O_pm = 4/np.pi*np.sqrt(K*F_R0(K)/m) - 0.3056/np.sqrt(K*F_R0(K)*m**3)
-    shift_O = -(K**2*r*r_0)/(2*m*(1/m**2+(O_pm)**2)) -(K**2*r*r)/(2*m*(1/m**2+(O_pm)**2))
+    # shift_O = -(K**2*r*r_0)/(2*m*(1/m**2+(O_pm)**2)) -(K**2*r*r)/(2*m*(1/m**2+(2*O_pm)**2))
+    shift_O = -(K**2*r*r_0)/(2*m*(1/m**2+(O_pm)**2)) + (K**2*r*r)/(2*m**2*O_pm*(1/m**2+(2*O_pm)**2))
     integrand_lock = lambda x:g(x,O_pm-shift_O,O_pm)*np.sqrt(1-((x)/X)**2)
     omega_p = bs*X
     O_min = -shift_O - omega_p
@@ -161,9 +162,10 @@ def F_drift2(r,K,m,F_R0,g=g_sec):
     r_0 = F_R0(K)
     O_pm = 4/np.pi*np.sqrt(K*F_R0(K)/m) - 0.3056/np.sqrt(K*F_R0(K)*m**3)
     O_p = bs*X
-    shift_O = -(K**2*r*r_0)/(2*m*(1/m**2+(O_pm)**2)) -(K**2*r*r)/(2*m*(1/m**2+(O_pm)**2))
-    # integrand_drift = lambda x:1/(2*(m*(x+O_pm-shift_O)**2+1/m))*g(x,O_pm-shift_O,O_pm)
-    integrand_drift = lambda x:1/(2*(m*(x-shift_O)**2+1/m))*g(x,O_pm-shift_O,O_pm)
+    # shift_O = -(K**2*r*r_0)/(2*m*(1/m**2+(O_pm)**2)) -(K**2*r*r)/(2*m*(1/m**2+(2*O_pm)**2))
+    shift_O = -(K**2*r*r_0)/(2*m*(1/m**2+(O_pm)**2)) + (K**2*r*r)/(2*m**2*O_pm*(1/m**2+(2*O_pm)**2))
+    integrand_drift = lambda x:1/(2*(m*(x+O_pm-shift_O)**2+1/m))*g(x,O_pm-shift_O,O_pm)
+    # integrand_drift = lambda x:1/(2*(m*(x)**2+1/m))*g(x,O_pm-shift_O,O_pm)
     # integrand_drift = lambda x:1/(2*(m*(x)**2+1/m))*g(x,O_pm-shift_O,O_pm)
     # integrand_drift = lambda x:1/(2*x**2)*g(x+shift_O,O_r,O_pm)
     I_d,err = quad(integrand_drift,+O_p,np.inf,limit=200)
@@ -355,7 +357,7 @@ get_r_sec_np = np.vectorize(get_r_sec)
 ### GET O_R
 def get_shift(O_0):
     r_last = norm.cdf(O_0)
-    O_samples = np.linspace(O_0,3,1000)
+    O_samples = np.linspace(O_0,4,1000)
     r_ = norm.cdf(O_samples)
     def get_O_r(r_):
         r_s = np.linspace(r_last,r_,10000,endpoint=False)
@@ -379,7 +381,7 @@ def F_sec0(r,K,m,O_0,O_20,F_R0,F_S,F_OR,g=g_sec):
     bs = np.where(np.where(a>1.193,1,b)>=1,1,b)
     a0 = 1/np.sqrt(K*r_0*m)
 
-    shift_O = K**2 * r_0 * r/(2*m*(1/m**2+(O_0)**2)) + K**2 * r * r/(2*m*(1/m**2+(O_0)**2))
+    shift_O = K**2 * r_0 * r/(2*m*(1/m**2+(O_0)**2)) + K**2 * r * r/(2*m*(1/m**2+(2*O_0)**2))
     O_pm = O_0
 
     shift_temp = F_S(X-shift_O)
@@ -435,3 +437,7 @@ def get_r_sec0(K,m,O_0,O_20,FR,F_S,F_OR,samples=200):
 
     return r_sd,r_su,r_sd_l,r_su_l
 get_r_sec0_np = np.vectorize(get_r_sec0)
+
+def get_shift_O(r0,rp,O_O,K,m):
+    shift = (K**2*r0*rp)/(2*m*(1/m**2+(O_O)**2)) - (K**2*rp*rp)/(2*m**2*O_O*(1/m**2+(2*O_O)**2))
+    return shift
