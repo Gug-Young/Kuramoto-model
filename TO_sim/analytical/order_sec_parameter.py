@@ -185,7 +185,6 @@ def get_r_sec(K,m,FR,samples=200):
 get_r_sec_np = np.vectorize(get_r_sec)
 
 
-
 def get_shift(R0,Rp,K,m):
     Op = norm.ppf(R0/2+0.5)
     S1 = K**2*R0*Rp/(2*Op**2*m)
@@ -236,3 +235,7 @@ def get_rstd(R0,Rp,K,m):
 def get_rmean(R0,Rp,K,m):
     r_mean = R0 + 2*Rp*cos_mean(R0,Rp,K,m)
     return r_mean
+
+def get_OPM(RM,K,m):
+    OPM =  4/np.pi*np.sqrt(K*RM/m) - 0.3056/np.sqrt(K*RM*m**3)
+    return OPM

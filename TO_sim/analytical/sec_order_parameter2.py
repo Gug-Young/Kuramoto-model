@@ -441,3 +441,8 @@ get_r_sec0_np = np.vectorize(get_r_sec0)
 def get_shift_O(r0,rp,O_O,K,m):
     shift = (K**2*r0*rp)/(2*m*(1/m**2+(O_O)**2)) - (K**2*rp*rp)/(2*m**2*O_O*(1/m**2+(2*O_O)**2))
     return shift
+
+
+def get_OPM(RM,K,m):
+    OPM =  4/np.pi*np.sqrt(K*RM/m) - 0.3056/np.sqrt(K*RM*m**3)
+    return OPM
