@@ -223,14 +223,14 @@ def cos_mean(RM,R0,Rp,K,m):
 def cos_2mean(RM,R0,Rp,K,m):
     OPM = get_OPM(RM,K,m)
     a = 1/np.sqrt(R0*K*m)
-    b = OPM/(K*R0)
+    b = 2*OPM/(K*R0)
     me = (1/2)*(-1+1j*a**2/b)*(a**2/(a**4+b**2))
-    b2 = 2*OPM/(K*Rp)
-    me2 = (1/2)*(-1+1j*a**2/b2)*(a**2/(a**4+b2**2))
-    return me2.real
+    # b2 = 2*OPM/(K*Rp)
+    # me2 = (1/2)*(-1+1j*a**2/b2)*(a**2/(a**4+b2**2))
+    return me.real
 
 def get_rstd(RM,R0,Rp,K,m):
-    rstd = 2*np.sqrt(1/2-cos_2mean(RM,R0,Rp,K,m)-cos_mean(RM,R0,Rp,K,m)**2)*Rp
+    rstd = 2*np.sqrt(1/2-cos_2mean(RM,R0,Rp,K,m)/2-cos_mean(RM,R0,Rp,K,m)**2)*Rp
     return rstd
 
 def get_rmean(RM,R0,Rp,K,m):
