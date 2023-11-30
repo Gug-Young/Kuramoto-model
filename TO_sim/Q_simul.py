@@ -15,10 +15,13 @@ RK4_jit_short = IJ.RK4_short
 
 
 class Q_Norm_simul():
-    def __init__(self,N,K,m,dt = 0.1,t_end = 5000,seed = 10,start_p = False) -> None:
+    def __init__(self,N,K,m,dt = 0.1,t_end = 5000,seed = 10,start_p = False,g_n=None) -> None:
         '''input : N,K,m,dt. dt, t_end,seed'''
         self.seed = seed
         theta_random, omega, Kc = Q_Normal(N, 0, 1, seed=seed)
+        if g_n!=None:
+            dist = np.linspace(0,1,N+2)[1:-1]
+            omega = g_n(dist)
         omega = np.sort(omega)-np.mean(omega)
         self.N = N; self.K = K; self.m = m;self.dt = dt
         self.t_end = t_end; self.dt = dt
