@@ -56,34 +56,34 @@ get_FX_d1 = np.vectorize(FX_drift1)
 get_FX_0 = np.vectorize(FX_0)
 
 
-def Make_R_function(m,K_max=15,g_n=g_n):
-    X = np.linspace((0.01),(20),num=3000)
-    RX_l1 = X*get_FX_l1(X,m,g=g_n)
-    RX_d1 = X*get_FX_d1(X,m,g=g_n)
-    RX_F = RX_l1 + RX_d1
-    R = RX_l1 + RX_d1
-    IK = np.nanmax((R/X))
-    Kb =1/IK
-    rb = X[np.nanargmax((R/X))]*IK
+# def Make_R_function(m,K_max=15,g_n=g_n):
+#     X = np.linspace((0.01),(20),num=3000)
+#     RX_l1 = X*get_FX_l1(X,m,g=g_n)
+#     RX_d1 = X*get_FX_d1(X,m,g=g_n)
+#     RX_F = RX_l1 + RX_d1
+#     R = RX_l1 + RX_d1
+#     IK = np.nanmax((R/X))
+#     Kb =1/IK
+#     rb = X[np.nanargmax((R/X))]*IK
 
-    Ks = np.linspace(0.5,K_max+0.1,50000)
-    A = np.where(np.abs(RX_F*Ks.reshape(-1,1)-X)<5e-5)
-    RR = RX_F*np.ones_like(Ks.reshape(-1,1))
-    KK = np.ones_like(RX_F)*Ks.reshape(-1,1)
+#     Ks = np.linspace(0.5,K_max+0.1,50000)
+#     A = np.where(np.abs(RX_F*Ks.reshape(-1,1)-X)<5e-5)
+#     RR = RX_F*np.ones_like(Ks.reshape(-1,1))
+#     KK = np.ones_like(RX_F)*Ks.reshape(-1,1)
 
-    RR_0 = RX_l1*np.ones_like(Ks.reshape(-1,1))
-    U,= np.where(RR[A] >= rb)
-    D,= np.where(RR[A] < rb)
-    Ku = KK[A][U]
-    Kd = KK[A][D]
-    Ku,Ku_idx,c=np.unique(Ku,return_counts=True,return_index=True)
-    Kd,Kd_idx,c=np.unique(Kd,return_counts=True,return_index=True)
+#     RR_0 = RX_l1*np.ones_like(Ks.reshape(-1,1))
+#     U,= np.where(RR[A] >= rb)
+#     D,= np.where(RR[A] < rb)
+#     Ku = KK[A][U]
+#     Kd = KK[A][D]
+#     Ku,Ku_idx,c=np.unique(Ku,return_counts=True,return_index=True)
+#     Kd,Kd_idx,c=np.unique(Kd,return_counts=True,return_index=True)
 
-    F_RMu = interpolate.interp1d(KK[A][U][Ku_idx], RR[A][U][Ku_idx], kind='quadratic',bounds_error=False)
-    F_R0u = interpolate.interp1d(KK[A][U][Ku_idx], RR_0[A][U][Ku_idx], kind='quadratic',bounds_error=False)
-    F_RMd = interpolate.interp1d(KK[A][D][Kd_idx], RR[A][D][Kd_idx], kind='quadratic',bounds_error=False)
-    F_R0d = interpolate.interp1d(KK[A][D][Kd_idx], RR_0[A][D][Kd_idx], kind='quadratic',bounds_error=False)
-    return F_RMd,F_RMu,F_R0d,F_R0u
+#     F_RMu = interpolate.interp1d(KK[A][U][Ku_idx], RR[A][U][Ku_idx], kind='quadratic',bounds_error=False)
+#     F_R0u = interpolate.interp1d(KK[A][U][Ku_idx], RR_0[A][U][Ku_idx], kind='quadratic',bounds_error=False)
+#     F_RMd = interpolate.interp1d(KK[A][D][Kd_idx], RR[A][D][Kd_idx], kind='quadratic',bounds_error=False)
+#     F_R0d = interpolate.interp1d(KK[A][D][Kd_idx], RR_0[A][D][Kd_idx], kind='quadratic',bounds_error=False)
+#     return F_RMd,F_RMu,F_R0d,F_R0u
 
 def Make_R0_function(m,O_0,K_max=15,g_n=g_n):
     X = np.linspace((0.01),(20),num=3000)
@@ -223,39 +223,39 @@ get_F2 = np.vectorize(F_sec)
 # get_F20 = np.vectorize(F_sec0)
 
 
-# def Make_R_function(m,K_max=15):
-#     X = np.linspace((0.01),(20),num=3000)
-#     RX_l1 = X*get_FX_l1(X,m,g=g_n)
-#     RX_d1 = X*get_FX_d1(X,m,g=g_n)
-#     RX_F = RX_l1 + RX_d1
-#     R = RX_l1 + RX_d1
-#     IK = np.nanmax((R/X))
-#     Kb =1/IK
-#     rb = X[np.nanargmax((R/X))]*IK
+def Make_R_function(m,K_max=15,g_n=g_n):
+    X = np.linspace((0.01),(20),num=3000)
+    RX_l1 = X*get_FX_l1(X,m,g=g_n)
+    RX_d1 = X*get_FX_d1(X,m,g=g_n)
+    RX_F = RX_l1 + RX_d1
+    R = RX_l1 + RX_d1
+    IK = np.nanmax((R/X))
+    Kb =1/IK
+    rb = X[np.nanargmax((R/X))]*IK
 
-#     Ks = np.linspace(0.5,K_max+0.1,50000)
-#     A = np.where(np.abs(RX_F*Ks.reshape(-1,1)-X)<5e-5)
-#     RR = RX_F*np.ones_like(Ks.reshape(-1,1))
-#     KK = np.ones_like(RX_F)*Ks.reshape(-1,1)
+    Ks = np.linspace(0.5,K_max+0.1,50000)
+    A = np.where(np.abs(RX_F*Ks.reshape(-1,1)-X)<5e-5)
+    RR = RX_F*np.ones_like(Ks.reshape(-1,1))
+    KK = np.ones_like(RX_F)*Ks.reshape(-1,1)
 
-#     RR_0 = RX_l1*np.ones_like(Ks.reshape(-1,1))
-#     U,= np.where(RR[A] >= rb)
-#     D,= np.where(RR[A] < rb)
-#     Ku = KK[A][U]
-#     Kd = KK[A][D]
-#     Ku,Ku_idx,c=np.unique(Ku,return_counts=True,return_index=True)
-#     Kd,Kd_idx,c=np.unique(Kd,return_counts=True,return_index=True)
+    RR_0 = RX_l1*np.ones_like(Ks.reshape(-1,1))
+    U,= np.where(RR[A] >= rb)
+    D,= np.where(RR[A] < rb)
+    Ku = KK[A][U]
+    Kd = KK[A][D]
+    Ku,Ku_idx,c=np.unique(Ku,return_counts=True,return_index=True)
+    Kd,Kd_idx,c=np.unique(Kd,return_counts=True,return_index=True)
 
-#     F_RMu = interpolate.interp1d(KK[A][U][Ku_idx], RR[A][U][Ku_idx], kind='quadratic',bounds_error=False)
-#     F_R0u = interpolate.interp1d(KK[A][U][Ku_idx], RR_0[A][U][Ku_idx], kind='quadratic',bounds_error=False)
-#     if m == 0:
-#         F_RMd = F_RMu
-#         F_R0d = F_R0u
-#     else:
-#         F_RMd = interpolate.interp1d(KK[A][D][Kd_idx], RR[A][D][Kd_idx], kind='quadratic',bounds_error=False)
-#         F_R0d = interpolate.interp1d(KK[A][D][Kd_idx], RR_0[A][D][Kd_idx], kind='quadratic',bounds_error=False)
+    F_RMu = interpolate.interp1d(KK[A][U][Ku_idx], RR[A][U][Ku_idx], kind='quadratic',bounds_error=False)
+    F_R0u = interpolate.interp1d(KK[A][U][Ku_idx], RR_0[A][U][Ku_idx], kind='quadratic',bounds_error=False)
+    if m == 0:
+        F_RMd = F_RMu
+        F_R0d = F_R0u
+    else:
+        F_RMd = interpolate.interp1d(KK[A][D][Kd_idx], RR[A][D][Kd_idx], kind='quadratic',bounds_error=False)
+        F_R0d = interpolate.interp1d(KK[A][D][Kd_idx], RR_0[A][D][Kd_idx], kind='quadratic',bounds_error=False)
 
-#     return F_RMd,F_RMu,F_R0d,F_R0u
+    return F_RMd,F_RMu,F_R0d,F_R0u
 
 # def Make_R0_function(m,O_0,K_max=15):
 #     X = np.linspace((0.01),(20),num=3000)
