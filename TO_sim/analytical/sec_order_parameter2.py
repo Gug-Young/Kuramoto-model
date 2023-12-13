@@ -36,6 +36,7 @@ def FX_drift1(X,m,g=g_n):
     O_p = b*X
     # O_p = (4/np.pi)*np.sqrt(X/m)
 
+    # integrand_drift = lambda x:1/(m*x**2+1/m)*g(x)
     integrand_drift = lambda x:1/(m*x**2+1/m)*g(x)
     I_d,err = quad(integrand_drift,O_p,np.inf,limit=200)
     return -1*I_d
@@ -131,14 +132,14 @@ def get_O_r(r):
     A = norm.ppf(r_s)
     return np.mean(A)
 
-def F_lock2(r,K,m,F_R0, g=g_sec):
+def F_lock2(r,K,m,F_R0,F_RM, g=g_sec):
     X = K*r
     a = 1/np.sqrt(X*m)
     b = 4/np.pi * a - 0.3056*a**3
     bs = np.where(np.where(a>1.193,1,b)>=1,1,b)
 
     r_0 = F_R0(K)
-    O_pm = 4/np.pi*np.sqrt(K*F_R0(K)/m) - 0.3056/np.sqrt(K*F_R0(K)*m**3)
+    O_pm = 4/np.pi*np.sqrt(K*F_RM(K)/m) - 0.3056/np.sqrt(K*F_RM(K)*m**3)
     # shift_O = -(K**2*r*r_0)/(2*m*(1/m**2+(O_pm)**2)) -(K**2*r*r)/(2*m*(1/m**2+(2*O_pm)**2))
     shift_O = -(K**2*r*r_0)/(2*m*(1/m**2+(O_pm)**2)) + (K**2*r*r)/(2*m**2*O_pm*(1/m**2+(2*O_pm)**2))
     integrand_lock = lambda x:g(x,O_pm-shift_O,O_pm)*np.sqrt(1-((x)/X)**2)
@@ -150,9 +151,9 @@ def F_lock2(r,K,m,F_R0, g=g_sec):
         m_ = np.nan
         
 
-    I_l,err = quad(integrand_lock, -omega_p,+omega_p,limit=200)
+    I_l,err = quad(integrand_lock, shift_O,+omega_p,limit=200)
     return I_l/X,m_
-def F_drift2(r,K,m,F_R0,g=g_sec):
+def F_drift2(r,K,m,F_R0,F_RM,g=g_sec):
     X = K*r
     a = 1/np.sqrt(X*m)
     b = 4/np.pi * a - 0.3056*a**3
@@ -160,7 +161,7 @@ def F_drift2(r,K,m,F_R0,g=g_sec):
 
 
     r_0 = F_R0(K)
-    O_pm = 4/np.pi*np.sqrt(K*F_R0(K)/m) - 0.3056/np.sqrt(K*F_R0(K)*m**3)
+    O_pm = 4/np.pi*np.sqrt(K*F_RM(K)/m) - 0.3056/np.sqrt(K*F_RM(K)*m**3)
     O_p = bs*X
     # shift_O = -(K**2*r*r_0)/(2*m*(1/m**2+(O_pm)**2)) -(K**2*r*r)/(2*m*(1/m**2+(2*O_pm)**2))
     shift_O = -(K**2*r*r_0)/(2*m*(1/m**2+(O_pm)**2)) + (K**2*r*r)/(2*m**2*O_pm*(1/m**2+(2*O_pm)**2))
@@ -212,9 +213,9 @@ def F_drift2(r,K,m,F_R0,g=g_sec):
 #     I_l,err = quad(integrand_lock, -O_d,+O_d,limit=200)
 #     return I_l/X-I_d,I_l/X,-I_d
 
-def F_sec(r,K,m,F_R0,g=g_sec):
-    F_l2,m_ = F_lock2(r,K,m,F_R0, g)
-    F_d2 = F_drift2(r,K,m,F_R0, g)
+def F_sec(r,K,m,F_R0,F_RM,g=g_sec):
+    F_l2,m_ = F_lock2(r,K,m,F_R0,F_RM,g)
+    F_d2 = F_drift2(r,K,m,F_R0,F_RM,g)
     return F_l2+F_d2,m_
 
 get_Fp_l = np.vectorize(F_lock2)
@@ -291,8 +292,8 @@ def Make_R_function(m,K_max=15,g_n=g_n):
 
 #     return F_RMd,F_RMu,F_R0d,F_R0u
 
-def get_r_sec(K,m,FR,samples=200,g_sec=g_sec):
-    r0_ =  FR(K)
+def get_r_sec(K,m,FR0,FRM,samples=200,g_sec=g_sec):
+    r0_ =  FR0(K)
     r_sd,r_su = np.nan,np.nan
     r_su_d,r_su_l = np.nan,np.nan
     mu = np.nan
@@ -300,7 +301,7 @@ def get_r_sec(K,m,FR,samples=200,g_sec=g_sec):
     if (K == 0)or (m==0):
         return r_sd,r_su,r_su_d,r_su_l,md,mu
     r_test = np.linspace(1e-5,(1-r0_)/2,samples)
-    F2,m_ = get_F2(r_test,K,m,FR)
+    F2,m_ = get_F2(r_test,K,m,FR0,FRM)
     R2_interpolate  = interpolate.interp1d(r_test,F2, kind='linear',bounds_error=False)
     r_test2 = np.linspace(1e-5,(1-r0_)/2,5000)
     Fs = R2_interpolate(r_test2)
@@ -312,8 +313,8 @@ def get_r_sec(K,m,FR,samples=200,g_sec=g_sec):
         r_sd,r_su = r_sec
     if len(r_sec)==1:
         r_su = r_sec
-    f_su,mu = F_lock2(r_su,K,m,F_R0=FR,g=g_sec)
-    f_sd,md = F_lock2(r_sd,K,m,F_R0=FR,g=g_sec)
+    f_su,mu = F_lock2(r_su,K,m,F_R0=FR0,F_RM=FRM,g=g_sec)
+    f_sd,md = F_lock2(r_sd,K,m,F_R0=FR0,F_RM=FRM,g=g_sec)
     r_su_l = r_su*K*f_su
     r_sd_l = r_sd*K*f_sd
     return r_sd,r_su,r_sd_l,r_su_l,md,mu
@@ -359,8 +360,8 @@ def get_shift(O_0):
     r_last = norm.cdf(O_0)
     O_samples = np.linspace(O_0,4,1000)
     r_ = norm.cdf(O_samples)
-    def get_O_r(r_):
-        r_s = np.linspace(r_last,r_,10000,endpoint=False)
+    def get_O_r(r):
+        r_s = np.linspace(r_last,r,10000,endpoint=False)
         A = norm.ppf(r_s)
         O_r = np.mean(A)
         shift_O = O_r - O_0
