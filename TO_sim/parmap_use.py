@@ -148,3 +148,11 @@ def KM_space_ms(m,seed,N,K_span,t_end,start_p):
     data['sig_+total']=sigPT
     data['sig_-total']=sigMT
     return data
+
+
+
+# def QSIM_get_theta_last(m,QSIMS):
+#     Qsim = QSIMS[m]
+#     _ = Qsim.solve()
+#     Theta_last = Qsim.Theta_last
+#     return m,x  Theta_last

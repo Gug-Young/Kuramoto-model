@@ -29,6 +29,25 @@ def Kuramoto_1st_mf(Theta,t,omega,N,m,K):
     Theta[:N] = dtheta
     return Theta
 
+@numba.jit(nopython=True)
+def Kuramoto_sets_mf(Theta,t,omega,N,m,K):
+    # print(f"Case m = {m}") 
+    if m == 0: 
+        Theta = Theta.copy()
+        theta = Theta[:,:N]
+        r,psi = get_order_parameter_sets(theta,N)
+        dtheta = omega + K*r*np.sin(psi - theta)
+        Theta[:,:N] = dtheta
+    else:
+        Theta = Theta.copy()
+        theta,dtheta = Theta[:,:N],Theta[:,N:2*N]
+        r,psi = get_order_parameter_sets(theta,N)
+        ddtheta = (1/m)*(-dtheta + omega + K*r*np.sin(psi - theta))
+        Theta[:,:N] = dtheta
+        Theta[:,N:2*N] = ddtheta
+    return Theta
+
+
 def Kuramoto_2nd_mf_r(Theta,t,omega,N,m,K):
     # print(f"Case m = {m}") 
     theta,dtheta = Theta[:N],Theta[N:2*N]
@@ -122,3 +141,21 @@ def Kuramoto_1st_mf_sets_r(theta_sets,t,omega,N,m,K_set):
     theta_sets[:,:N] = dtheta
     theta_sets[:,N:2*N] = dtheta
     return theta_sets,r
+
+
+@numba.jit(nopython=True)
+def Kuramoto_mf(Theta,t,omega,N,m,K):
+    if m == 0:
+        Theta = Theta.copy()
+        theta = Theta[:N]
+        r,psi = get_order_parameter(theta,N)
+        dtheta = omega + K*r*np.sin(psi - theta)
+        Theta[:N] = dtheta
+    else:
+        Theta = Theta.copy()
+        theta,dtheta = Theta[:N],Theta[N:2*N]
+        r,psi = get_order_parameter(theta,N)
+        ddtheta = (1/m)*(-dtheta + omega + K*r*np.sin(psi - theta))
+        Theta[:N] = dtheta
+        Theta[N:2*N] = ddtheta
+    return Theta

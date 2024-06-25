@@ -219,10 +219,10 @@ class Q_Norm_simul():
         r_clu_info['r_total_mean'] =  rs_mean
         r_clu_info['r_total_std'] =  rs_std
         return r_clu_info
-    def TLO(self,K_end = 15,dK = 0.1):
+    def TLO(self,K_start=0,K_end = 15,dK = 0.1):
         N = self.N
         self.dK = dK
-        Ks = np.arange(0,K_end+dK/2,dK)
+        Ks = np.arange(K_start,K_end+dK/2,dK)
         self.Theta_last = self.Theta_ori.copy()
         df_rset = pd.DataFrame(columns=['r_mean','r0','r+','r-','r+_total','r-_total',
                                         'sig_mean','sig0','sig+','sig-','sig+_total','sig-_total'],index=Ks)
