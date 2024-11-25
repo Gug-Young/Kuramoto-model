@@ -270,8 +270,10 @@ def cluster_os_new2(AVG,height=1e-2,c_std = 3,check=2e-4,c_size=3,N=500,omega=[]
     C_end = np.array([c_[:min_len] for c_ in C_end]).T
     Is_group, = np.where((np.std(C_start,axis=1)<c_std)&(A[:min_len]>c_size))
     arg = sort_argavg[-1]
-
-    cluster = np.array([np.arange(c_i,c_j,1) for c_i,c_j in zip(C_start[Is_group,-1],C_end[Is_group,-1])])
+    try:
+        cluster = np.array([np.arange(c_i,c_j,1) for c_i,c_j in zip(C_start[Is_group,-1],C_end[Is_group,-1])])
+    except ValueError:
+        print(Is_group)
     check_ = [np.mean(diff_avg[-1,c_[1:]])<check for c_ in cluster]
     cluster = cluster[check_]
     C_s,C_e = [],[]

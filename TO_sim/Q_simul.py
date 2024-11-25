@@ -5,7 +5,7 @@ from TO_sim.Sol_Kuramoto import Sol_Kuramoto_mf2 as mf2
 from TO_sim.Kuramoto_model import Kuramoto_2nd_mf,Kuramoto_1st_mf
 from scipy.stats import norm
 from TO_sim.get_cluster import cluster_os_new2
-from TO_sim.gen_Distribution import Normal, Quantile_Normal as Q_Normal, Lorentzian
+from TO_sim.gen_Distribution import Normal, Quantile_Normal as Q_Normal, Quantile_Lorentzian as Q_Lorentz
 import TO_sim.analytical.order_sec_parameter as OSP
 import TO_sim.analytical.sec_order_parameter2 as OSP2
 import TO_sim.Integrator_jit as IJ
@@ -20,8 +20,10 @@ class Q_Norm_simul():
         self.seed = seed
         theta_random, omega, Kc = Q_Normal(N, 0, 1, seed=seed)
         if g_n!=None:
-            dist = np.linspace(0,1,N+2)[1:-1]
-            omega = g_n(dist)
+            # dist = np.linspace(0,1,N+2)[1:-1]
+            # omega = g_n(N)
+            _,omega,_ = g_n(N)
+
         omega = np.sort(omega)-np.mean(omega)
         self.N = N; self.K = K; self.m = m;self.dt = dt
         self.t_end = t_end; self.dt = dt
