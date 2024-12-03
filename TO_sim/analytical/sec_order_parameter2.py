@@ -362,7 +362,7 @@ def get_shift(O_0):
     r_last = norm.cdf(O_0)
     O_samples = np.linspace(O_0,4,1000)
     r_ = norm.cdf(O_samples)
-    def get_O_r(r):
+    def  get_O_r(r):
         r_s = np.linspace(r_last,r,10000,endpoint=False)
         A = norm.ppf(r_s)
         O_r = np.mean(A)

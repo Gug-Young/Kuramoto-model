@@ -9,7 +9,7 @@ from TO_sim.gen_Distribution import Normal, Quantile_Normal as Q_Normal, Quantil
 import TO_sim.analytical.order_sec_parameter as OSP
 import TO_sim.analytical.sec_order_parameter2 as OSP2
 import TO_sim.Integrator_jit as IJ
-
+from tqdm.notebook import tqdm
 RK4_jit = IJ.RK4
 RK4_jit_short = IJ.RK4_short
 
@@ -237,7 +237,7 @@ class Q_Norm_simul():
         df_avglast = pd.DataFrame(columns=range(N),index=Ks)
         df_Thetalast = pd.DataFrame(columns=range(2*N),index=Ks)
 
-        for K in Ks:
+        for K in tqdm(Ks):
             self.K = K
             self.Theta_init = self.Theta_last
             sol = self.solve()
@@ -328,7 +328,7 @@ class Q_Norm_simul():
         df_avglast = pd.DataFrame(columns=range(N),index=Ks)
         df_Thetalast = pd.DataFrame(columns=range(2*N),index=Ks)
 
-        for K in Ks[::-1]:
+        for K in tqdm(Ks[::-1]):
             self.K = K
             self.Theta_init = self.Theta_last
             sol = self.solve()

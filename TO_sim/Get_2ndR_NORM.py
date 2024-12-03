@@ -223,7 +223,15 @@ def get_r_sec(K,m,FR0,FRM,O_pm=None,samples=200,g_sec=g_sec):
 #     return r_sd,r_su,r_sd_l,r_su_l,md,mu
 
 get_r_sec_np = np.vectorize(get_r_sec)
-
+def get_sig(F_r,m):
+    F_RM = F_r['R_u']
+    F_R0 = F_r['R0_u']
+    K = F_r['Ks']
+    O_pm = 4/np.pi*np.sqrt(K*F_RM(K)/m) - 0.3056/np.sqrt(K*F_RM(K)*m**3)
+    rp =F_r['r_+u']
+    r0 = F_R0(K)
+    sig = 2*rp*np.sqrt(1/2 - m*K*r0/(4*(4*m**2*O_pm**2 +1)) - (m*K*r0/(2*(m**2*O_pm**2+1))**2))
+    return sig
 
 def get_r_rp(m,O_0 = 0,K_max = 10,K_len = 201):
     F_r = {}
@@ -242,6 +250,7 @@ def get_r_rp(m,O_0 = 0,K_max = 10,K_len = 201):
     F_r['r_+0d'] = r_sd_l
     F_r['F_md'] = md
     F_r['F_mu'] = mu
+    F_r['sig'] = get_sig(F_r,m)
     return F_r
 
 

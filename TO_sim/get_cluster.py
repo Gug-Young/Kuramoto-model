@@ -259,7 +259,7 @@ def cluster_os_new2(AVG,height=1e-2,c_std = 3,check=2e-4,c_size=3,N=500,omega=[]
     sort_avg = np.sort(AVG,axis=1)
     sort_argavg = np.argsort(AVG,axis=1)
     diff_avg = np.diff(np.c_[sort_avg[:,0],sort_avg],axis=1)
-    min_len = 10
+    min_len = 3
     for A,c_start,c_end in [peaks_(x,height,N=N) for x in diff_avg]:
         min_len = min(min_len,len(A))
         C_size.append(A)
@@ -271,14 +271,16 @@ def cluster_os_new2(AVG,height=1e-2,c_std = 3,check=2e-4,c_size=3,N=500,omega=[]
     Is_group, = np.where((np.std(C_start,axis=1)<c_std)&(A[:min_len]>c_size))
     arg = sort_argavg[-1]
     try:
-        cluster = np.array([np.arange(c_i,c_j,1) for c_i,c_j in zip(C_start[Is_group,-1],C_end[Is_group,-1])])
+        cluster = np.array([np.arange(c_i,c_j,1,dtype=int) for c_i,c_j in zip(C_start[Is_group,-1],C_end[Is_group,-1])],dtype=object)
     except ValueError:
+        cluster = np.array([])
         print(Is_group)
-    check_ = [np.mean(diff_avg[-1,c_[1:]])<check for c_ in cluster]
+    check_ = [np.mean(diff_avg[-1,[*c_[1:]]])<check for c_ in cluster]
     cluster = cluster[check_]
     C_s,C_e = [],[]
     CMO = []
     for c_ in cluster:
+        c_ = np.asarray(c_,dtype=int)
         c_s = np.min(arg[c_])
         c_e = np.max(arg[c_])
         C_s.append(c_s)
@@ -288,10 +290,10 @@ def cluster_os_new2(AVG,height=1e-2,c_std = 3,check=2e-4,c_size=3,N=500,omega=[]
     Is_group = Is_group[check_]
     omega_s = [omega[c_s] for c_s in C_s]
     omega_e = [omega[c_e-1] for c_e in C_e]
-    CMP = np.array([np.mean(sort_avg[0,c_]) for c_ in cluster])
+    CMP = np.array([np.mean(sort_avg[0,[*c_]]) for c_ in cluster])
 
     CS = np.array([len(c_) for c_ in cluster])
-    cluster = np.array([sort_argavg[-1,c_] for c_ in cluster])
+    cluster = np.array([sort_argavg[-1,[*c_]] for c_ in cluster],dtype=object)
     return CS,CMP,cluster,omega_s,omega_e,CMO,Is_group,C_s,C_e
 
 def C_rsmso_set_new(m,K_set,N,theta_init_set,omega_set,pdtheta_set,t_end=5000,dt=0.1):
