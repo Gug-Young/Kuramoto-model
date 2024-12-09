@@ -102,7 +102,8 @@ def FX_Rld(X,m,O_0):
 get_FX_Rld = np.vectorize(FX_Rld)
 
 def Make_R_function(m,O_0,K_max=15):
-    X = np.linspace((0.01),(20),num=3000)
+    K_len = np.max((20,K_max))
+    X = np.linspace((0.001),(K_len),num=4000)
     RX_l1,RX_d1,RX_F = get_FX_Rld(X,m,O_0)
     R = RX_l1 + RX_d1
     IK = np.nanmax((R/X))
