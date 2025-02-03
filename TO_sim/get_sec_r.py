@@ -174,4 +174,38 @@ def get_rp(K,r0,OP,m,MAX=False):
     except:
         return K,np.nan,np.nan,np.nan,np.nan
     
+    
+    
+
+def get_rp2(K,r0,OP,m,MAX=False):
+    rs1 = np.logspace(-6,-3,200)
+    rps = np.r_[rs1,np.linspace(1e-3,(1-r0)/2,1000)] 
+    RP_ls = np.nan*rps
+    RP_ds = np.nan*rps
+
+    for i,rp in enumerate(rps):
+        a = 1/np.sqrt(K*rp*m)
+        b = 4/np.pi * a - 0.3056*a**3
+        b = np.where(np.where(a>1.193,1,b)>=1,1,b)
+        if MAX:
+            OPs = K*rp
+        else:
+            OPs = b*K*rp
+        delta_P = m*K**2*r0*rp/(2*(m**2*OP**2+1)) + K**2*rp**2/(4*OP*(4*m**2*OP**2+1))
+        RP_ls[i],err = quad(integrand_Rl3, OP,OP+delta_P+OPs,args=(K*rp,OP,delta_P,m),limit=200)
+        RP_ds[i],err = quad(integrand_Rd, OP+delta_P+OPs,np.inf,args=(K*rp,0,1,m),limit=200)
+
+
+    RP = (RP_ls-RP_ds)
+    x, = np.where((RP-rps)>=0)
+    try:
+        rp_d = rps[x[0]]
+        rp_u = rps[x[-1]]
+        rp0_d = RP_ls[x[0]]
+        rp0_u = RP_ls[x[-1]]
+        return K,rp_d,rp_u,rp0_d,rp0_u
+    except:
+        return K,np.nan,np.nan,np.nan,np.nan
+    
 get_rp = np.vectorize(get_rp) 
+get_rp2 = np.vectorize(get_rp2)
