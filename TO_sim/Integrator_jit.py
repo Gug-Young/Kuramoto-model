@@ -55,6 +55,47 @@ def RK4_short(f, y0, t, args=(),result_time = 2010):
             y[i + 1] = y[i] + (h / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4)
     return y
 
+
+@numba.jit(nopython=True)
+def RK4_short_theta(f, y0, t, args=(),sum_range = 2010):
+    save_time = sum_range
+    integtime = len(t) - save_time
+    h = t[1] - t[0]
+    if h <= 0.01:
+        n_save = sum_range*10
+    else:
+        n_save = sum_range
+    N = len(y0)//2
+    y = np.zeros((n_save, N))
+    y_ = y0
+    for i in range(integtime):
+        k1 = f(y_, t, *args)
+        k2 = f(y_ + k1 * h / 2.0, t + h / 2.0, *args)
+        k3 = f(y_ + k2 * h / 2.0, t + h / 2.0, *args)
+        k4 = f(y_ + k3 * h, t + h, *args)
+        y_ = y_ + (h / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4)
+    num = 0
+    y[0] = y_
+    if h <= 0.01:
+        for i in range(n_save):
+            k1= f(y_, t[i], *args)
+            k2= f(y_ + k1 * h / 2.0, t[i] + h / 2.0, *args)
+            k3= f(y_ + k2 * h / 2.0, t[i] + h / 2.0, *args)
+            k4= f(y_ + k3 * h, t[i] + h, *args)
+            y_ =y_ + (h / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4)
+            if i%10 == 0:
+                num+= 1
+                y[num] = y_[:N]
+    else:
+        for i in range(n_save):
+            k1= f(y_, t[i], *args)
+            k2= f(y_ + k1 * h / 2.0, t[i] + h / 2.0, *args)
+            k3= f(y_ + k2 * h / 2.0, t[i] + h / 2.0, *args)
+            k4= f(y_ + k3 * h, t[i] + h, *args)
+            y_ =y_ + (h / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4)
+            y[i] = y_[:N]
+    return y
+
 @numba.jit(nopython=True)
 def RK4_sets(f, y0, t, args=(),result_time = 0):
     n = len(t) - result_time
