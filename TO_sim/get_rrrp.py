@@ -259,3 +259,119 @@ def get_K_r_rp(m,K_):
     OPS_u = F_OPS(K_)
     R_u,R_0u = F_Ru(K_),F_R0u(K_)
     return R_u,R_0u,RP1_u,RPl_u
+
+
+
+
+def get_K_r_rp_full(m):
+    Xs1 = np.logspace(-15,-3,2000)
+    Xs = np.r_[Xs1,np.linspace(1e-3,60,10001)]
+
+    R_ls = []
+    R_drs = []
+
+
+    for X in Xs:
+        a = 1/np.sqrt(X*m)
+        b = 4/np.pi * a - 0.3056*a**3
+        b = np.where(np.where(a>1.193,1,b)>=1,1,b)
+
+        omega_p = b*X
+        R_l,err = quad(integrand_Rl, -omega_p,omega_p,args=(X,0,1,m),limit=200)
+        R_dr,err = quad(integrand_Rd,omega_p,np.inf,args=(X,0,1,m),limit=200)
+        R_ls.append(R_l)
+        R_drs.append(R_dr)
+
+
+    R0 = np.array(R_ls)
+    RD = 2*np.array(R_drs)
+    R = R0 -RD
+    KK = 1/(R/Xs)
+    K_min_arg = np.argmin(KK)
+
+    K_d = KK[:K_min_arg]
+    K_u = KK[K_min_arg:]
+    r_d = Xs[:K_min_arg]/K_d
+    r_u = Xs[K_min_arg:]/K_u
+    R_0d = R0[:K_min_arg]
+    R_0u = R0[K_min_arg:]
+    R_dd = -RD[:K_min_arg]
+    R_du = -RD[K_min_arg:]
+
+    R_u = R_0u + R_du
+    R_d = R_0d + R_dd
+    K_start = KK[K_min_arg]
+    Xsu = Xs[K_min_arg:]
+    Xsd = Xs[:K_min_arg]
+
+    a = 1/np.sqrt(Xsu*m)
+    b = 4/np.pi * a - 0.3056*a**3
+    b = np.where(np.where(a>1.193,1,b)>=1,1,b)
+    OPS = b*Xsu
+
+
+    a = 1/np.sqrt(Xsd*m)
+    b = 4/np.pi * a - 0.3056*a**3
+    b = np.where(np.where(a>1.193,1,b)>=1,1,b)
+    OPSd = b*Xsd
+
+
+    RP1_d = []
+    RP1_u = []
+    RPl_d = []
+    RPl_u = []
+    K1p = []
+
+    for K, r, r0, OP in zip(K_u, R_u, R_0u, OPS):
+        # 1. 적당한 간격으로 샘플
+        rps = np.r_[np.logspace(-10, -3, 100), np.linspace(0.001, (1 - r0) / 2, 100)]
+        diffs = np.array([RP_diff(rp, K, r0, OP, m) for rp in rps])
+
+
+        # 2. sign change 구간 찾기 (교점 후보)
+        sign_change = np.where(np.diff(np.sign(diffs)) != 0)[0]
+
+        try:
+            # 첫 번째 교점
+            i1 = sign_change[0]
+            if len(sign_change) == 1:
+                rp_left = 0
+                RP1_d.append(0)
+                RPl_d.append(0)
+                
+            else:
+                rp_left = brentq(RP_diff, rps[i1], rps[i1+1], args=(K, r0, OP, m))
+                RP1_d.append(rp_left)
+                RPl_d.append(RP_l(rp_left, K, r0, OP, m))
+
+
+                
+            # 두 번째 교점
+            i2 = sign_change[-1]
+            rp_right = brentq(RP_diff, rps[i2-1], rps[i2+1], args=(K, r0, OP, m))
+
+            RP1_u.append(rp_right)
+            RPl_u.append(RP_l(rp_right, K, r0, OP, m))
+            K1p.append(K)
+        except:
+            K1p.append(K)
+            RP1_d.append(np.nan)
+            RP1_u.append(np.nan)
+            RPl_d.append(np.nan)
+            RPl_u.append(np.nan)
+
+
+    K1p = np.array(K1p)
+    RP1_u = np.array(RP1_u)
+    RPl_u = np.array(RPl_u)
+    RP1_d = np.array(RP1_d)
+    RPl_d = np.array(RPl_d)
+
+
+    arg, = np.where(RP1_u<1e-13)
+    K1p[arg] = np.nan
+    RPl_u[arg] = np.nan
+    RP1_u[arg] = np.nan
+    RPl_d[arg] = np.nan
+    RP1_d[arg] = np.nan
+    return R_u,R_0u,R_d,R_0d,RP1_u,RPl_u,RP1_d,RPl_d,K1p,K_start
