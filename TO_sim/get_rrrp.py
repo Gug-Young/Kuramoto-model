@@ -327,36 +327,40 @@ def get_K_r_rp_full(m):
         rps = np.r_[np.logspace(-10, -3, 100), np.linspace(0.001, (1 - r0) / 2, 100)]
         diffs = np.array([RP_diff(rp, K, r0, OP, m) for rp in rps])
 
-
         # 2. sign change 구간 찾기 (교점 후보)
         sign_change = np.where(np.diff(np.sign(diffs)) != 0)[0]
-
         try:
             # 첫 번째 교점
+            K1p.append(K)
             i1 = sign_change[0]
             if len(sign_change) == 1:
                 rp_left = 0
                 RP1_d.append(0)
                 RPl_d.append(0)
-                
+
             else:
-                rp_left = brentq(RP_diff, rps[i1], rps[i1+1], args=(K, r0, OP, m))
+                rp_left = brentq(RP_diff, rps[i1], rps[i1+1], args=(K, r0, OP, m),)
                 RP1_d.append(rp_left)
                 RPl_d.append(RP_l(rp_left, K, r0, OP, m))
-
 
                 
             # 두 번째 교점
             i2 = sign_change[-1]
-            rp_right = brentq(RP_diff, rps[i2-1], rps[i2+1], args=(K, r0, OP, m))
-
-            RP1_u.append(rp_right)
-            RPl_u.append(RP_l(rp_right, K, r0, OP, m))
-            K1p.append(K)
+            try:
+                rp_right = brentq(RP_diff, rps[i2-1], rps[i2+1], args=(K, r0, OP, m))
+                RP1_u.append(rp_right)
+                try:
+                    RPl_u.append(RP_l(rp_right, K, r0, OP, m))
+                except:
+                    RPl_u.append(np.nan)
+            except:
+                RP1_u.append(np.nan)
+                RPl_u.append(np.nan)
         except:
             K1p.append(K)
             RP1_d.append(np.nan)
             RP1_u.append(np.nan)
+
             RPl_d.append(np.nan)
             RPl_u.append(np.nan)
 
@@ -368,10 +372,9 @@ def get_K_r_rp_full(m):
     RPl_d = np.array(RPl_d)
 
 
-    arg, = np.where(RP1_u<1e-13)
-    K1p[arg] = np.nan
-    RPl_u[arg] = np.nan
-    RP1_u[arg] = np.nan
-    RPl_d[arg] = np.nan
-    RP1_d[arg] = np.nan
-    return R_u,R_0u,R_d,R_0d,RP1_u,RPl_u,RP1_d,RPl_d,K1p,K_start
+    # arg, = np.where(RP1_u<1e-13)
+    # RPl_u[arg] = np.nan
+    # RP1_u[arg] = np.nan
+    # RPl_d[arg] = np.nan
+    # RP1_d[arg] = np.nan
+    return R_u,R_0u,R_d,R_0d,RP1_u,RPl_u,RP1_d,RPl_d,K1p,K_u,K_d,K_start
